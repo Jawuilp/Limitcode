@@ -1,0 +1,55 @@
+[
+    { "keys": ["ctrl+alt+l"], "command": "limitcode_open_chat" },
+    { "keys": ["ctrl+alt+a"], "command": "limitcode_send_to_agent" },
+    { "keys": ["ctrl+alt+m"], "command": "limitcode_change_model" },
+    { "keys": ["ctrl+alt+p"], "command": "limitcode_change_provider" },
+    { "keys": ["ctrl+alt+n"], "command": "limitcode_new_chat" },
+    { "keys": ["ctrl+alt+h"], "command": "limitcode_list_history" },
+    { "keys": ["ctrl+alt+y"], "command": "limitcode_rename_session" },
+    { "keys": ["ctrl+alt+d"], "command": "limitcode_delete_session" },
+    { "keys": ["ctrl+alt+r"], "command": "limitcode_set_reasoning_effort" },
+    { "keys": ["ctrl+alt+t"], "command": "limitcode_toggle_show_thoughts" },
+    { "keys": ["ctrl+alt+k"], "command": "limitcode_setup_api_key" },
+    { "keys": ["ctrl+alt+s"], "command": "limitcode_open_settings" },
+    { "keys": ["ctrl+alt+c"], "command": "limitcode_clear_chat" },
+    { "keys": ["ctrl+alt+x"], "command": "limitcode_cancel_request" },
+    { "keys": ["ctrl+alt+shift+x"], "command": "limitcode_stop_agent" },
+    { "keys": ["ctrl+alt+shift+k"], "command": "limitcode_open_key_bindings" },
+    {
+        "keys": ["enter"],
+        "command": "limitcode_send_chat",
+        "context": [
+            { "key": "setting.limitcode_chat_view", "operator": "equal", "operand": true }
+        ]
+    },
+    {
+        "keys": ["shift+enter"],
+        "command": "limitcode_send_chat",
+        "context": [
+            { "key": "setting.limitcode_chat_view", "operator": "equal", "operand": true }
+        ]
+    },
+    {
+        "keys": ["escape"],
+        "command": "limitcode_stop_agent",
+        "context": [
+            { "key": "setting.limitcode_chat_view", "operator": "equal", "operand": true }
+        ]
+    },
+    {
+        "keys": ["up"],
+        "command": "limitcode_history_up",
+        "context": [
+            { "key": "setting.limitcode_chat_view", "operator": "equal", "operand": true },
+            { "key": "auto_complete_visible", "operator": "equal", "operand": false }
+        ]
+    },
+    {
+        "keys": ["down"],
+        "command": "limitcode_history_down",
+        "context": [
+            { "key": "setting.limitcode_chat_view", "operator": "equal", "operand": true },
+            { "key": "auto_complete_visible", "operator": "equal", "operand": false }
+        ]
+    }
+]

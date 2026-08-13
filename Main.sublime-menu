@@ -1,0 +1,38 @@
+[
+    {
+        "id": "preferences",
+        "children": [
+            {
+                "id": "package-settings",
+                "children": [
+                    {
+                        "caption": "Limitcode",
+                        "children": [
+                            {
+                                "caption": "Settings",
+                                "command": "limitcode_open_settings"
+                            },
+                            {
+                                "caption": "Key Bindings",
+                                "command": "limitcode_open_key_bindings"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "id": "tools",
+        "children": [
+            {"caption": "-"},
+            {"caption": "Limitcode", "mnemonic": "L", "children": [
+                {"command": "limitcode_open_chat", "caption": "Open Chat"},
+                {"command": "limitcode_send_to_agent", "caption": "Send to Agent"},
+                {"command": "limitcode_change_provider", "caption": "Change Provider"},
+                {"command": "limitcode_change_model", "caption": "Change Model"},
+                {"command": "limitcode_clear_chat", "caption": "Clear Chat"}
+            ]}
+        ]
+    }
+]

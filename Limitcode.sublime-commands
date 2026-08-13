@@ -1,0 +1,55 @@
+[
+    {
+        "caption": "Limitcode: Open Chat",
+        "command": "limitcode_open_chat"
+    },
+    {
+        "caption": "Limitcode: New Chat",
+        "command": "limitcode_new_chat"
+    },
+    {
+        "caption": "Limitcode: Chat History",
+        "command": "limitcode_list_history"
+    },
+    {
+        "caption": "Limitcode: Rename Session",
+        "command": "limitcode_rename_session"
+    },
+    {
+        "caption": "Limitcode: Delete Session",
+        "command": "limitcode_delete_session"
+    },
+    {
+        "caption": "Limitcode: Send to Agent",
+        "command": "limitcode_send_to_agent"
+    },
+    {
+        "caption": "Limitcode: Change Provider",
+        "command": "limitcode_change_provider"
+    },
+    {
+        "caption": "Limitcode: Change Model",
+        "command": "limitcode_change_model"
+    },
+    {
+        "caption": "Limitcode: Set Reasoning Effort",
+        "command": "limitcode_set_reasoning_effort"
+    },
+    {
+        "caption": "Limitcode: Toggle Show Thoughts",
+        "command": "limitcode_toggle_show_thoughts"
+    },
+    {
+        "caption": "Limitcode: Setup Provider API Key",
+        "command": "limitcode_setup_api_key"
+    },
+    {
+        "caption": "Limitcode: Open Settings",
+        "command": "limitcode_open_settings"
+    },
+
+    {
+        "caption": "Limitcode: Clear Chat",
+        "command": "limitcode_clear_chat"
+    }
+]
