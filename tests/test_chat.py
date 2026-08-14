@@ -191,17 +191,17 @@ class ChatSessionTest(unittest.TestCase):
         # them as orphans.
         session = ChatSession(session_id="test_session")
         session.messages = [
-            {"role": "user", "content": "lee el archivo"},
-            {"role": "assistant", "content": "Listo, lo lei"},
+            {"role": "user", "content": "read the file"},
+            {"role": "assistant", "content": "Done, I read it"},
         ]
         session.api_messages = [
-            {"role": "user", "content": "lee el archivo"},
+            {"role": "user", "content": "read the file"},
             {"role": "assistant", "content": [
-                {"type": "output_text", "text": "Voy a leerlo"},
+                {"type": "output_text", "text": "I will read it"},
                 {"type": "function_call", "call_id": "call_abc", "name": "read_file", "arguments": "{}"},
             ]},
-            {"role": "tool", "tool_call_id": "call_abc", "content": "contenido"},
-            {"role": "assistant", "content": "Listo, lo lei"},
+            {"role": "tool", "tool_call_id": "call_abc", "content": "file contents"},
+            {"role": "assistant", "content": "Done, I read it"},
         ]
 
         session._sync_api_messages()
