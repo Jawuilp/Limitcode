@@ -780,7 +780,7 @@ class Agent:
                                 f"> {line}" if line else ">"
                                 for line in reasoning_chunk.splitlines()
                             )
-                            prefix = "\n\n---\n\n> **Pensamiento interno (debug)**\n" if not reasoning_header_shown else "\n"
+                            prefix = "\n\n---\n\n> **Razonamiento**\n" if not reasoning_header_shown else "\n"
                             self.on_text_chunk(f"{prefix}{quoted}\n")
                             reasoning_header_shown = True
                             displayed_reasoning_chars += len(reasoning_chunk)
