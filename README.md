@@ -130,7 +130,7 @@ unsupported models ignore it.
 
 ## Limitcode Pro
 
-<a href="https://limitcode.jawuil.dev" target="_blank" rel="noopener">limitcode.jawuil.dev</a>
+<a href="https://limitcode.jawuil.dev/?utm_source=github&utm_medium=readme" target="_blank" rel="noopener">limitcode.jawuil.dev</a>
 
 Limitcode Pro is the fully autonomous version of Limitcode. It keeps the same
 editor-native workflow and adds:
