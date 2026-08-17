@@ -60,7 +60,7 @@ Open every file you want the agent to read or edit before sending a request.
 
 ## Demo
 
-<video src="https://github.com/Jawuilp/Limitcode/raw/main/media/limitOSS-1.mp4" controls></video>
+<video src="https://raw.githubusercontent.com/Jawuilp/Limitcode/main/media/limitOSS-1.mp4" controls></video>
 
 Watch Limitcode build a Pomodoro timer app end to end — including the lo-fi melody it composed and exported as an audio file.
 
