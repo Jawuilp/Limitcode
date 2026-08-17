@@ -58,6 +58,12 @@ object in `Limitcode.sublime-settings`.
 
 Open every file you want the agent to read or edit before sending a request.
 
+## Demo
+
+<video src="https://github.com/Jawuilp/Limitcode/releases/download/v1.0.0-rc.1/limitOSS-1.mp4" controls></video>
+
+<video src="https://github.com/Jawuilp/Limitcode/releases/download/v1.0.0-rc.1/limitOSS-video2.mp4" controls></video>
+
 ## A typical session
 
 1. Open the file you want to work on.
