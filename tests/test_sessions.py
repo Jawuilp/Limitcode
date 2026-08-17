@@ -1,9 +1,4 @@
-"""Round-trip tests for ChatSession persistence: save/load fidelity,
-rename, delete, prompt history and title derivation.
-
-Sessions are written to the package history/ folder (gitignored);
-each test uses a unique id and removes its files on teardown.
-"""
+"""Round-trip tests for ChatSession persistence in writable user storage."""
 
 import os
 import sys
@@ -12,6 +7,7 @@ import types
 import unittest
 import uuid
 import shutil
+from unittest.mock import patch
 
 from tests.package_loader import load_limitcode_package
 from tests.sublime_stub import install_sublime_stub
@@ -24,7 +20,8 @@ sublime_plugin.ViewEventListener = type("ViewEventListener", (), {})
 sys.modules["sublime_plugin"] = sublime_plugin
 
 load_limitcode_package()
-import Limitcode.chat as chat_module
+import sublime
+import Limitcode.storage as storage_module
 from Limitcode.chat import ChatSession
 
 
@@ -32,12 +29,20 @@ class SessionRoundTripTest(unittest.TestCase):
     def setUp(self):
         self.session_id = "test-session-" + uuid.uuid4().hex[:8]
         self._package_dir = tempfile.mkdtemp()
-        self._original_module_file = chat_module.__file__
-        chat_module.__file__ = os.path.join(self._package_dir, "chat.py")
-        os.makedirs(os.path.join(self._package_dir, "history"))
+        self._original_packages_path = sublime._packages_path
+        sublime._packages_path = os.path.join(self._package_dir, "Packages")
+        self._legacy_dir = os.path.join(self._package_dir, "legacy-history")
+        os.makedirs(self._legacy_dir)
+        self._legacy_patch = patch.object(
+            storage_module,
+            "_legacy_history_dir",
+            return_value=self._legacy_dir,
+        )
+        self._legacy_patch.start()
 
     def tearDown(self):
-        chat_module.__file__ = self._original_module_file
+        self._legacy_patch.stop()
+        sublime._packages_path = self._original_packages_path
         shutil.rmtree(self._package_dir, ignore_errors=True)
 
     def _make_saved_session(self):
@@ -72,13 +77,24 @@ class SessionRoundTripTest(unittest.TestCase):
         self.assertEqual(loaded.prompt_history, ["hola que tal"])
 
     def test_save_creates_missing_history_directory(self):
-        shutil.rmtree(os.path.join(self._package_dir, "history"))
+        history_path = storage_module.history_dir()
+        shutil.rmtree(history_path, ignore_errors=True)
 
         session = ChatSession(self.session_id)
         session.add_message("user", "se guarda")
 
         self.assertTrue(os.path.exists(session.json_path))
         self.assertTrue(os.path.exists(session.file_path))
+
+    def test_legacy_history_is_migrated_to_user_storage(self):
+        legacy_file = os.path.join(self._legacy_dir, "old-session.json")
+        with open(legacy_file, "w", encoding="utf-8") as file:
+            file.write("{}")
+
+        target = storage_module.history_dir()
+
+        self.assertTrue(os.path.exists(os.path.join(target, "old-session.json")))
+        self.assertIn(os.path.join("User", "Limitcode", "history"), target)
 
     def test_title_derived_from_first_prompt(self):
         session = self._make_saved_session()

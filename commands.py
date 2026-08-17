@@ -12,6 +12,7 @@ from typing import Optional, Callable, Any
 
 from .chat import ChatView
 from .agent_runner import run_agent_async
+from .storage import history_dir
 
 
 def _run_in_background(target: Callable[[], None]) -> None:
@@ -64,17 +65,13 @@ class LimitcodeOpenSettingsCommand(sublime_plugin.WindowCommand):
 
 
 class LimitcodeOpenKeyBindingsCommand(sublime_plugin.WindowCommand):
-    """Open Limitcode key bindings from a folder or packed installation."""
+    """Open Limitcode key bindings in Sublime's split settings view."""
 
     def run(self):
-        keymap_path = os.path.join(os.path.dirname(__file__), "Default.sublime-keymap")
-        if os.path.isfile(keymap_path):
-            self.window.open_file(keymap_path)
-            return
-
         package_name = (__package__ or "Limitcode").split(".", 1)[0]
         self.window.run_command("edit_settings", {
-            "base_file": f"${{packages}}/{package_name}/Default.sublime-keymap"
+            "base_file": f"${{packages}}/{package_name}/Default.sublime-keymap",
+            "default": "[\n]\n",
         })
 
 
@@ -83,14 +80,13 @@ class LimitcodeListHistoryCommand(sublime_plugin.WindowCommand):
     """List and load past chat sessions."""
 
     def run(self):
-        package_path = os.path.dirname(__file__)
-        history_dir = os.path.join(package_path, "history")
-        
-        if not os.path.exists(history_dir):
+        session_dir = history_dir()
+
+        if not os.path.exists(session_dir):
             sublime.status_message("Limitcode: No history found")
             return
 
-        files = [f for f in os.listdir(history_dir) if f.endswith(".md")]
+        files = [f for f in os.listdir(session_dir) if f.endswith(".md")]
         files.sort(reverse=True) # Newest first
 
         if not files:
@@ -99,7 +95,7 @@ class LimitcodeListHistoryCommand(sublime_plugin.WindowCommand):
 
         items = []
         for f in files:
-            path = os.path.join(history_dir, f)
+            path = os.path.join(session_dir, f)
             title = f
             date = ""
             try:

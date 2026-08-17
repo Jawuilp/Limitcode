@@ -12,6 +12,8 @@ import subprocess
 import datetime
 from typing import List, Dict, Any, Optional, Tuple
 
+from .storage import history_dir
+
 class ChatSession:
     """Manages a single chat session with message history and persistence."""
     
@@ -29,9 +31,9 @@ class ChatSession:
         self._update_paths()
     
     def _update_paths(self):
-        package_path = os.path.dirname(__file__)
-        self.file_path = os.path.join(package_path, "history", f"{self.session_id}.md")
-        self.json_path = os.path.join(package_path, "history", f"{self.session_id}.json")
+        session_dir = history_dir()
+        self.file_path = os.path.join(session_dir, f"{self.session_id}.md")
+        self.json_path = os.path.join(session_dir, f"{self.session_id}.json")
 
     @staticmethod
     def _extract_tool_call_ids(msg) -> set:
@@ -289,10 +291,9 @@ class ChatSession:
     
     def load(self, session_id: str):
         """Load a session from JSON (preferentially) or Markdown file (fallback)."""
-        package_path = os.path.dirname(__file__)
-        history_dir = os.path.join(package_path, "history")
-        json_path = os.path.join(history_dir, f"{session_id}.json")
-        file_path = os.path.join(history_dir, f"{session_id}.md")
+        session_dir = history_dir()
+        json_path = os.path.join(session_dir, f"{session_id}.json")
+        file_path = os.path.join(session_dir, f"{session_id}.md")
         
         # 1. Try JSON load first for full structural fidelity
         if os.path.exists(json_path):

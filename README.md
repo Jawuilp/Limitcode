@@ -54,7 +54,7 @@ object in `Limitcode.sublime-settings`.
 1. Place the repository in Sublime Text's `Packages/Limitcode` directory.
 2. Restart Sublime Text.
 3. Run `Limitcode: Setup Provider API Key` from the Command Palette.
-4. Open the chat with `Ctrl+Alt+L`.
+4. Run `Limitcode: Open Chat` from the Command Palette.
 
 Open every file you want the agent to read or edit before sending a request.
 
@@ -69,8 +69,8 @@ Watch Limitcode build a Pomodoro timer app end to end — including the lo-fi me
 ## A typical session
 
 1. Open the file you want to work on.
-2. Select the code you care about and run `Limitcode: Send to Agent`
-   (`Ctrl+Alt+A`), or just describe the change in the chat.
+2. Select the code you care about and run `Limitcode: Send to Agent`, or just
+   describe the change in the chat.
 3. Review the edit the agent applies to your open file.
 4. Ask for adjustments, or move on.
 
@@ -91,28 +91,26 @@ your machine.
 - `Limitcode: Toggle Show Thoughts`
 - `Limitcode: Setup Provider API Key`
 - `Limitcode: Open Settings`
+- `Limitcode: Open Key Bindings`
 - `Limitcode: Clear Chat`
+- `Limitcode: Cancel Active Response`
+- `Limitcode: Stop Agent`
 
 ## Keyboard shortcuts
 
-| Action | Shortcut |
-|---|---|
-| Open or focus chat | `Ctrl+Alt+L` |
-| Send selection/file to agent | `Ctrl+Alt+A` |
-| Change model | `Ctrl+Alt+M` |
-| Change provider | `Ctrl+Alt+P` |
-| New chat | `Ctrl+Alt+N` |
-| Chat history | `Ctrl+Alt+H` |
-| Rename session | `Ctrl+Alt+Y` |
-| Delete session | `Ctrl+Alt+D` |
-| Set reasoning effort | `Ctrl+Alt+R` |
-| Toggle show thoughts | `Ctrl+Alt+T` |
-| Setup API key | `Ctrl+Alt+K` |
-| Open settings | `Ctrl+Alt+S` |
-| Clear chat | `Ctrl+Alt+C` |
-| Cancel active response | `Ctrl+Alt+X` |
-| Stop from the chat | `Ctrl+Alt+Shift+X` |
-| Send chat message | `Enter` |
+Limitcode does not claim global shortcuts when installed. Inside the chat,
+`Enter`, `Shift+Enter`, `Escape`, `Up`, and `Down` are context-specific controls.
+
+To add your own global shortcuts, run `Limitcode: Open Key Bindings` and place
+bindings in the user pane. For example:
+
+```json
+[
+    { "keys": ["ctrl+alt+l"], "command": "limitcode_open_chat" },
+    { "keys": ["ctrl+alt+a"], "command": "limitcode_send_to_agent" },
+    { "keys": ["ctrl+alt+x"], "command": "limitcode_cancel_request" }
+]
+```
 
 ## Configuration
 

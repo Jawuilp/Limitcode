@@ -47,9 +47,20 @@
         "caption": "Limitcode: Open Settings",
         "command": "limitcode_open_settings"
     },
-
+    {
+        "caption": "Limitcode: Open Key Bindings",
+        "command": "limitcode_open_key_bindings"
+    },
     {
         "caption": "Limitcode: Clear Chat",
         "command": "limitcode_clear_chat"
+    },
+    {
+        "caption": "Limitcode: Cancel Active Response",
+        "command": "limitcode_cancel_request"
+    },
+    {
+        "caption": "Limitcode: Stop Agent",
+        "command": "limitcode_stop_agent"
     }
 ]

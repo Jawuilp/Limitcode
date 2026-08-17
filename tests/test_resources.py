@@ -56,6 +56,21 @@ class ResourceLoadingTest(unittest.TestCase):
             self.assertIs(contexts.get("setting.limitcode_chat_view"), True)
             self.assertIs(contexts.get("auto_complete_visible"), False)
 
+    def test_default_key_bindings_are_scoped_to_the_chat(self):
+        keymap_path = PACKAGE_ROOT / "Default.sublime-keymap"
+        bindings = json.loads(keymap_path.read_text(encoding="utf-8"))
+
+        self.assertTrue(bindings)
+        for binding in bindings:
+            contexts = {item["key"]: item.get("operand") for item in binding["context"]}
+            self.assertIs(contexts.get("setting.limitcode_chat_view"), True)
+
+    def test_package_export_excludes_development_and_media_files(self):
+        attributes = (PACKAGE_ROOT / ".gitattributes").read_text(encoding="utf-8")
+
+        for path in ("/media", "/tests", "/.python-version", "/lsp/README.md"):
+            self.assertIn(f"{path} export-ignore", attributes)
+
     def test_dead_code_block_controls_and_streaming_setting_are_absent(self):
         chat_source = (PACKAGE_ROOT / "chat.py").read_text(encoding="utf-8")
         settings_source = (PACKAGE_ROOT / "Limitcode.sublime-settings").read_text(encoding="utf-8")

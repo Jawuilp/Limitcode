@@ -10,6 +10,8 @@ import sublime_plugin
 import os
 import sys
 
+from .storage import data_path
+
 _enabled = False
 
 
@@ -45,8 +47,7 @@ def plugin_loaded():
     if not _enabled:
         return
 
-    package_dir = os.path.dirname(__file__)
-    log_file = os.path.join(package_dir, "history", "sublime_console.log")
+    log_file = data_path("logs", "sublime_console.log")
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
 
     if not isinstance(sys.stdout, LogWriter):
