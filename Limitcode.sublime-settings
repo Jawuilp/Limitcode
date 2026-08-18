@@ -1,7 +1,7 @@
 {
     "default_provider": "openai",
     "default_model": "gpt-5.5",
-    "api_key": "",
+    "api_keys": {},
     "provider_base_urls": {},
     // "auto" uses the provider/model default. A number overrides it.
     "temperature": "auto",
