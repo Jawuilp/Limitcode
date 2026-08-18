@@ -316,10 +316,10 @@ class LimitcodeSetReasoningEffortCommand(sublime_plugin.WindowCommand):
 
     LEVELS = ["off", "low", "medium", "high"]
     DESCRIPTIONS = {
-        "off": "Sin razonamiento extendido (por defecto)",
-        "low": "Pensamiento breve: mas rapido y barato",
-        "medium": "Equilibrio entre calidad y costo",
-        "high": "Razonamiento profundo: mejor para tareas dificiles",
+        "off": "No extended reasoning (default)",
+        "low": "Brief reasoning: faster and cheaper",
+        "medium": "Balanced quality and cost",
+        "high": "Deep reasoning: best for difficult tasks",
     }
 
     def run(self):
