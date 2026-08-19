@@ -13,7 +13,7 @@ import sublime
 sublime.status_message = lambda msg: None
 
 load_limitcode_package()
-from Limitcode.agent import Agent
+from Limitcode.lib.agent import Agent
 from Limitcode.providers.base import BaseProvider
 
 

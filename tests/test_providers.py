@@ -16,7 +16,7 @@ sys.modules["sublime_plugin"] = sublime_plugin
 
 load_limitcode_package()
 import sublime
-from Limitcode.limitcode import get_provider, is_provider_configured
+from Limitcode.lib.limitcode import get_provider, is_provider_configured
 from Limitcode.providers.openai_compatible import OpenAICompatibleProvider
 from Limitcode.providers.provider_registry import ProviderRegistry
 

@@ -21,8 +21,8 @@ sys.modules["sublime_plugin"] = sublime_plugin
 
 load_limitcode_package()
 import sublime
-import Limitcode.storage as storage_module
-from Limitcode.chat import ChatSession
+import Limitcode.lib.storage as storage_module
+from Limitcode.lib.chat import ChatSession
 
 
 class SessionRoundTripTest(unittest.TestCase):

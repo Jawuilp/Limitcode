@@ -8,7 +8,7 @@ import socket
 import threading
 from typing import Dict, List, Optional, Iterator, Any
 
-from ..agent_types import ToolCall, StreamResponse
+from ..lib.agent_types import ToolCall, StreamResponse
 
 class RateLimitError(Exception):
     """Raised when the API returns a 429 Too Many Requests error."""
@@ -242,7 +242,7 @@ class BaseProvider:
         Reads a stream line by line and allows the handler to signal completion.
         Ensures the connection is closed immediately upon completion or error.
         """
-        from ..logger import log_info
+        from ..lib.logger import log_info
         try:
             # Set a shorter timeout for the socket during streaming 
             # so we don't hang if the server stops sending but doesn't close.

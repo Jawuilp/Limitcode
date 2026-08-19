@@ -9,7 +9,7 @@ from tests.sublime_stub import install_sublime_stub
 install_sublime_stub()
 load_limitcode_package()
 
-from Limitcode.agent import Agent
+from Limitcode.lib.agent import Agent
 
 
 class FakeProvider:

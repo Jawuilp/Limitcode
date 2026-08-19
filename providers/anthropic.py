@@ -40,7 +40,7 @@ class AnthropicProvider(BaseProvider):
     def _list_models_fallback(self) -> List[str]:
         """Fetch available Claude models from Anthropic API."""
         try:
-            from .logger import log_info
+            from ..lib.logger import log_info
             import json
             
             headers = self._get_headers()

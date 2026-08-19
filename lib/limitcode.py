@@ -7,8 +7,8 @@ import sublime
 import sublime_plugin
 from typing import Optional
 
-from .providers.provider_registry import ProviderRegistry
-from .providers.base import BaseProvider
+from ..providers.provider_registry import ProviderRegistry
+from ..providers.base import BaseProvider
 
 
 # Plugin lifecycle (plugin_loaded/plugin_unloaded) lives in __init__.py;

@@ -204,7 +204,7 @@ class OpenAICompatibleProvider(BaseProvider):
         """Fetch available models from the provider's /models endpoint."""
         import json
         from urllib.parse import urlparse
-        from ..logger import log_info, log_error
+        from ..lib.logger import log_info, log_error
         
         host, port, base_path = self._parse_url(self.base_url)
         
@@ -294,7 +294,7 @@ class OpenAICompatibleProvider(BaseProvider):
 
     def _stream_request(self, messages: List[Dict], tools: Optional[List[Dict]] = None) -> Iterator[StreamResponse]:
         """Execute a streaming request to the OpenAI-compatible API."""
-        from ..logger import log_info, log_error
+        from ..lib.logger import log_info, log_error
         
         host, port, base_path = self._parse_url(self.base_url)
         # Combine base_path with config path
@@ -318,7 +318,7 @@ class OpenAICompatibleProvider(BaseProvider):
         temperature: Optional[float] = None
     ) -> Iterator[str]:
         """Simple streaming text generation."""
-        from ..logger import log_error
+        from ..lib.logger import log_error
         headers = self._get_headers()
         
         formatted_messages = self._format_messages([{"role": "system", "content": system_prompt}] + messages)
@@ -432,7 +432,7 @@ class OpenAICompatibleProvider(BaseProvider):
         response = self._make_https_request(
             host, port, "POST", api_path, headers, json.dumps(payload), timeout=60
         )
-        from ..logger import log_info, log_error
+        from ..lib.logger import log_info, log_error
         log_info(f"[{self._provider_name.upper()}] Sent payload with messages", {
             "last_message": payload["messages"][-1] if len(payload["messages"]) > 0 else None,
             "assistant_message": payload["messages"][-2] if len(payload["messages"]) > 1 else None

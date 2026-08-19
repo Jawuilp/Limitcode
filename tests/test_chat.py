@@ -17,7 +17,7 @@ sys.modules["sublime_plugin"] = sublime_plugin
 
 load_limitcode_package()
 import sublime
-from Limitcode.chat import ChatSession, ChatView
+from Limitcode.lib.chat import ChatSession, ChatView
 
 class ChatSessionTest(unittest.TestCase):
     def setUp(self):

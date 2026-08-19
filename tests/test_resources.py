@@ -42,8 +42,8 @@ class ResourceLoadingTest(unittest.TestCase):
         menu = json.loads(menu_text)
 
         self.assertTrue(menu)
-        self.assertNotIn("${packages}/Limitcode", menu_text)
-        self.assertIn('"command": "limitcode_open_settings"', menu_text)
+        self.assertIn("${packages}/Limitcode", menu_text)
+        self.assertIn('"command": "edit_settings"', menu_text)
         self.assertIn('"command": "limitcode_open_key_bindings"', menu_text)
 
     def test_history_arrows_do_not_override_visible_autocomplete(self):
@@ -72,7 +72,7 @@ class ResourceLoadingTest(unittest.TestCase):
             self.assertIn(f"{path} export-ignore", attributes)
 
     def test_dead_code_block_controls_and_streaming_setting_are_absent(self):
-        chat_source = (PACKAGE_ROOT / "chat.py").read_text(encoding="utf-8")
+        chat_source = (PACKAGE_ROOT / "lib" / "chat.py").read_text(encoding="utf-8")
         settings_source = (PACKAGE_ROOT / "Limitcode.sublime-settings").read_text(encoding="utf-8")
 
         for symbol in (

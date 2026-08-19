@@ -10,7 +10,10 @@
                         "children": [
                             {
                                 "caption": "Settings",
-                                "command": "limitcode_open_settings"
+                                "command": "edit_settings",
+                                "args": {
+                                    "base_file": "${packages}/Limitcode/Limitcode.sublime-settings"
+                                }
                             },
                             {
                                 "caption": "Key Bindings",

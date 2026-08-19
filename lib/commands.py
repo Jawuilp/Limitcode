@@ -297,7 +297,7 @@ class LimitcodeChangeProviderCommand(sublime_plugin.WindowCommand):
     """Change the AI provider."""
 
     def run(self):
-        from .providers.provider_registry import ProviderRegistry
+        from ..providers.provider_registry import ProviderRegistry
         providers = ProviderRegistry.get_provider_names()
 
         def on_select(idx):
@@ -486,7 +486,7 @@ class LimitcodeSetupApiKeyCommand(sublime_plugin.WindowCommand):
     """Set up the API key for the current or chosen provider."""
 
     def run(self):
-        from .providers.provider_registry import ProviderRegistry
+        from ..providers.provider_registry import ProviderRegistry
         providers = ProviderRegistry.get_provider_names()
 
         def on_select_provider(idx):

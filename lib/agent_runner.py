@@ -8,7 +8,7 @@ from typing import Optional
 
 from .limitcode import get_provider
 from .agent import Agent
-from .tools.tools import ToolManager
+from ..tools.tools import ToolManager
 from .logger import log_info
 
 

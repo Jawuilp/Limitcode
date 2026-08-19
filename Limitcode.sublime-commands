@@ -48,6 +48,13 @@
         "command": "limitcode_open_settings"
     },
     {
+        "caption": "Preferences: Limitcode Settings",
+        "command": "edit_settings",
+        "args": {
+            "base_file": "${packages}/Limitcode/Limitcode.sublime-settings"
+        }
+    },
+    {
         "caption": "Limitcode: Open Key Bindings",
         "command": "limitcode_open_key_bindings"
     },

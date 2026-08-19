@@ -13,7 +13,7 @@ sublime.error_message = lambda msg: None
 sublime.status_message = lambda msg: None
 
 load_limitcode_package()
-import Limitcode.agent_runner as agent_runner
+import Limitcode.lib.agent_runner as agent_runner
 
 
 class FakeResult:
@@ -274,11 +274,11 @@ class AgentRunnerTest(unittest.TestCase):
     def test_both_commands_delegate_to_unified_route(self):
         commands_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            "Limitcode", "commands.py",
+            "Limitcode", "lib", "commands.py",
         )
         if not os.path.exists(commands_path):
             commands_path = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "..", "commands.py")
+                os.path.dirname(os.path.abspath(__file__)), "..", "lib", "commands.py")
         with open(commands_path, "r", encoding="utf-8") as f:
             source = f.read()
         # Both entry points must delegate; no command may build an Agent itself

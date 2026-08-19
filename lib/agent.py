@@ -17,10 +17,10 @@ import platform
 from typing import List, Dict, Any, Optional, Callable
 
 from .agent_types import AgentResponse
-from .providers.base import BaseProvider
-from .tools import ToolManager
-from .tools.tool_schemas import get_tools_for_provider, get_required_args_for_tool
-from .prompts.manager import PromptManager
+from ..providers.base import BaseProvider
+from ..tools import ToolManager
+from ..tools.tool_schemas import get_tools_for_provider, get_required_args_for_tool
+from ..prompts.manager import PromptManager
 
 
 def log_info(message: str, metadata: dict = None):
@@ -478,7 +478,7 @@ class Agent:
 
         try:
             model_name = getattr(self.provider, "model", None)
-            from .tools.base import get_open_files_paths
+            from ..tools.base import get_open_files_paths
             open_files = get_open_files_paths()
             open_files_str = ", ".join(open_files) if open_files else "None"
             system_prompt = self.prompt_manager.get_system_prompt(

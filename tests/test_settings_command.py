@@ -14,7 +14,7 @@ sublime_plugin.TextCommand = type("TextCommand", (), {})
 sys.modules["sublime_plugin"] = sublime_plugin
 
 load_limitcode_package()
-from Limitcode.commands import LimitcodeOpenKeyBindingsCommand, LimitcodeOpenSettingsCommand
+from Limitcode.lib.commands import LimitcodeOpenKeyBindingsCommand, LimitcodeOpenSettingsCommand
 
 
 class SettingsCommandTest(unittest.TestCase):

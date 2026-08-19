@@ -101,11 +101,11 @@ class GeminiProvider(BaseProvider):
             response.close()
             cache_name = data.get("name")
             if cache_name:
-                from ..logger import log_info
+                from ..lib.logger import log_info
                 log_info(f"[GEMINI] Created explicit cache: {cache_name} (ttl=3600s)")
                 return cache_name
         except Exception as e:
-            from ..logger import log_info
+            from ..lib.logger import log_info
             log_info(f"[GEMINI] Cache creation failed, falling back to uncached: {e}")
         return None
 
@@ -143,7 +143,7 @@ class GeminiProvider(BaseProvider):
         temperature: Optional[float] = None
     ) -> Iterator[str]:
         """Simple streaming text generation."""
-        from ..logger import log_info
+        from ..lib.logger import log_info
         
         gemini_messages = []
         for msg in messages:
@@ -215,7 +215,7 @@ class GeminiProvider(BaseProvider):
         on_cancel: Optional[callable] = None
     ) -> StreamResponse:
         """Streaming with tool calling."""
-        from ..logger import log_info, log_error
+        from ..lib.logger import log_info, log_error
         
         log_info("[GEMINI] Starting create_message_with_tools")
         
