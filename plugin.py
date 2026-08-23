@@ -6,7 +6,22 @@ Plugin lifecycle entry point: initialization and cleanup live here.
 import sublime
 from .lib.agent import Agent
 from .lib.chat import ChatView
-from .lib.providers.provider_registry import ProviderRegistry
+from .providers.provider_registry import ProviderRegistry
+
+# Re-export Sublime command/listener classes so the plugin host registers them.
+# (Sublime only scans top-level modules of a package for plugin classes.)
+from .lib.commands import *  # noqa: F401,F403
+from .lib.session_commands import *  # noqa: F401,F403
+from .lib.debug_listener import *  # noqa: F401,F403
+from .lib.chat import (  # noqa: F401
+    LimitcodePasteCommand,
+    LimitcodeChatInputListener,
+    LimitcodeSendChatCommand,
+    LimitcodeInternalClearCommand,
+    LimitcodeInternalAppendCommand,
+    LimitcodeInternalReplaceInputCommand,
+)
+
 
 
 def plugin_loaded():
