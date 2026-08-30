@@ -34,6 +34,13 @@ project, runs commands, and manages its own context, see
 - Prompt history and @-file references
 - A deliberately small, reviewable tool surface
 
+## LSP integration (optional)
+
+If you have the [LSP](https://packagecontrol.io/packages/LSP) package installed,
+Limitcode will use its diagnostics after each edit to give the agent feedback on
+syntax and type errors, so it can catch and fix issues before continuing. This
+is optional and automatic — it only activates if LSP is already installed.
+
 ## Providers
 
 Limitcode supports:
