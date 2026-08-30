@@ -51,7 +51,8 @@
         "caption": "Preferences: Limitcode Settings",
         "command": "edit_settings",
         "args": {
-            "base_file": "${packages}/Limitcode/Limitcode.sublime-settings"
+            "base_file": "${packages}/Limitcode/Limitcode.sublime-settings",
+            "default": {}
         }
     },
     {
