@@ -365,6 +365,8 @@ class LimitcodeChangeModelCommand(sublime_plugin.WindowCommand):
         "gemini":            "Google Gemini",
         "ollama":            "Ollama (Local)",
         "lm-studio":         "LM Studio (Local)",
+        "openrouter":        "OpenRouter",
+        "moonshot":          "Moonshot AI (Kimi)",
     }
 
     # Emergency fallback if a provider's list_models() fails completely
@@ -375,6 +377,11 @@ class LimitcodeChangeModelCommand(sublime_plugin.WindowCommand):
         "gemini":            ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"],
         "ollama":            ["llama3", "mistral", "qwen2.5-coder", "phi3"],
         "lm-studio":         ["meta-llama-3-8b-instruct", "qwen2.5-coder-7b-instruct"],
+        "openrouter":        ["anthropic/claude-sonnet-4-5", "google/gemini-2.5-pro",
+                             "openai/gpt-4o", "openai/o3-mini", "deepseek/deepseek-chat",
+                             "qwen/qwen3-coder-plus"],
+        "moonshot":          ["kimi-k2.6", "kimi-k2.5", "kimi-k2-thinking", "kimi-k2-thinking-turbo",
+                             "moonshot-v1-8k", "moonshot-v1-32k", "moonshot-v1-128k"],
     }
 
     def run(self):

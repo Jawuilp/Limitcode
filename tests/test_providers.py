@@ -193,6 +193,74 @@ class ProviderConfigTest(unittest.TestCase):
         self.assertEqual(provider._list_models_fallback(), ["deepseek-live-model"])
         self.assertEqual(calls[0][2:], ("GET", "/models"))
 
+    def test_openrouter_and_moonshot_are_registered(self):
+        self.assertIn("openrouter", ProviderRegistry._providers)
+        self.assertIn("moonshot", ProviderRegistry._providers)
+        self.assertIn("openrouter", ProviderRegistry.get_compatible_providers())
+        self.assertIn("moonshot", ProviderRegistry.get_compatible_providers())
+
+    def test_openrouter_models_use_their_live_endpoint(self):
+        provider = ProviderRegistry.create(
+            "openrouter",
+            api_key="test",
+            model="anthropic/claude-sonnet-4-5",
+            extra_config={"provider_name": "openrouter"},
+        )
+        calls = []
+
+        class Response:
+            status = 200
+
+            def read(self):
+                return json.dumps({"data": [{"id": "openrouter-live-model"}]}).encode()
+
+            def close(self):
+                pass
+
+            def getheader(self, name):
+                return None
+
+        def request(host, port, method, path, headers, body=None, **kwargs):
+            calls.append((host, port, method, path))
+            return Response()
+
+        provider._make_https_request = request
+
+        self.assertEqual(provider._list_models_fallback(), ["openrouter-live-model"])
+        self.assertEqual(calls[0][2:], ("GET", "/api/v1/models"))
+        self.assertEqual(calls[0][0], "openrouter.ai")
+
+    def test_moonshot_models_use_their_live_endpoint(self):
+        provider = ProviderRegistry.create(
+            "moonshot",
+            api_key="test",
+            model="kimi-k2.6",
+            extra_config={"provider_name": "moonshot"},
+        )
+        calls = []
+
+        class Response:
+            status = 200
+
+            def read(self):
+                return json.dumps({"data": [{"id": "moonshot-live-model"}]}).encode()
+
+            def close(self):
+                pass
+
+            def getheader(self, name):
+                return None
+
+        def request(host, port, method, path, headers, body=None, **kwargs):
+            calls.append((host, port, method, path))
+            return Response()
+
+        provider._make_https_request = request
+
+        self.assertEqual(provider._list_models_fallback(), ["moonshot-live-model"])
+        self.assertEqual(calls[0][2:], ("GET", "/v1/models"))
+        self.assertEqual(calls[0][0], "api.moonshot.ai")
+
 
 
     def test_openai_compatible_formats_image_messages(self):

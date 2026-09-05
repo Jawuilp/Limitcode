@@ -42,6 +42,22 @@ PROVIDER_CONFIGS = {
             "Authorization": f"Bearer {key}" if key else ""
         }
     },
+    "openrouter": {
+        "base_url": "openrouter.ai",
+        "path": "/api/v1/chat/completions",
+        "headers": lambda key: {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {key}"
+        }
+    },
+    "moonshot": {
+        "base_url": "api.moonshot.ai",
+        "path": "/v1/chat/completions",
+        "headers": lambda key: {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {key}"
+        }
+    },
 }
 
 # Model info for common models
@@ -58,6 +74,14 @@ MODEL_INFO = {
     "deepseek-reasoner": {"max_tokens": 8192, "context_window": 64000, "supports_images": False},
     "deepseek-v4-flash": {"max_tokens": 8192, "context_window": 128000, "supports_images": False},
     "deepseek-v4-pro": {"max_tokens": 8192, "context_window": 128000, "supports_images": False},
+    # Moonshot (Kimi)
+    "kimi-k2.6": {"max_tokens": 8192, "context_window": 128000, "supports_images": False},
+    "kimi-k2.5": {"max_tokens": 8192, "context_window": 128000, "supports_images": False},
+    "kimi-k2-thinking": {"max_tokens": 8192, "context_window": 256000, "supports_images": False},
+    "kimi-k2-thinking-turbo": {"max_tokens": 8192, "context_window": 256000, "supports_images": False},
+    "moonshot-v1-8k": {"max_tokens": 4096, "context_window": 8192, "supports_images": False},
+    "moonshot-v1-32k": {"max_tokens": 8192, "context_window": 32768, "supports_images": False},
+    "moonshot-v1-128k": {"max_tokens": 8192, "context_window": 131072, "supports_images": False},
     # Default fallback
     "default": {"max_tokens": 4096, "context_window": 8192, "supports_images": False},
 }

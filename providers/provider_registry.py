@@ -27,6 +27,8 @@ class ProviderRegistry:
         cls.register("deepseek", OpenAICompatibleProvider)
         cls.register("ollama", OpenAICompatibleProvider)
         cls.register("lm-studio", OpenAICompatibleProvider)
+        cls.register("openrouter", OpenAICompatibleProvider)
+        cls.register("moonshot", OpenAICompatibleProvider)
         
         from .anthropic import AnthropicProvider
         cls.register("anthropic", AnthropicProvider)
