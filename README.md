@@ -49,12 +49,16 @@ Limitcode supports:
 - DeepSeek
 - Anthropic
 - Gemini
+- OpenRouter
+- Moonshot AI (Kimi)
 - Ollama
 - LM Studio
 
 Ollama and LM Studio run locally without an API key. Cloud providers require a
 key configured through `Limitcode: Setup Provider API Key` or the `api_keys`
-object in `Limitcode.sublime-settings`.
+object in `Limitcode.sublime-settings`. Model lists are fetched live from each
+provider's `/models` endpoint (with a cached fallback), so new models appear
+automatically.
 
 ## Quick start
 
