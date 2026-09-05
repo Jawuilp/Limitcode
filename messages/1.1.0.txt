@@ -1,0 +1,16 @@
+Limitcode 1.1.0 — New providers
+
+Added two new providers:
+
+* OpenRouter — access to hundreds of models via OpenRouter (openrouter.ai).
+* Moonshot AI (Kimi) — kimi-k2.6, kimi-k2.5, kimi-k2-thinking,
+  kimi-k2-thinking-turbo, and moonshot-v1-8k/32k/128k (api.moonshot.ai).
+
+Both are OpenAI-compatible. Model lists are fetched live from each
+provider's /models endpoint (with a cached fallback), so new models
+appear automatically.
+
+Usage:
+1. Add your API key in Limitcode.sublime-settings -> api_keys:
+     "api_keys": { "openrouter": "sk-...", "moonshot": "sk-..." }
+2. Choose the provider via "Limitcode: Change Provider".

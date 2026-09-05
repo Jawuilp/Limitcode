@@ -1,0 +1,4 @@
+Limitcode 1.1.1 — Docs
+
+README updated to mention the new OpenRouter and Moonshot AI (Kimi)
+providers, and the live /models model discovery.
