@@ -8,6 +8,8 @@
     // Maximum output tokens. Use "auto" for the provider's known model limit.
     "max_tokens": 8192,
     "max_iterations": 50,
+    // Chat-only font size. Use "auto" to inherit Sublime's global font size.
+    "chat_font_size": "auto",
     // Reasoning/thinking effort: "off", "low", "medium" or "high".
     // Mapped per provider (Anthropic output_config.effort, OpenAI
     // reasoning_effort and Gemini thinkingBudget).

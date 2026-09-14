@@ -4,6 +4,18 @@
         "command": "limitcode_open_chat"
     },
     {
+        "caption": "Limitcode: Increase Chat Font Size",
+        "command": "limitcode_increase_chat_font_size"
+    },
+    {
+        "caption": "Limitcode: Decrease Chat Font Size",
+        "command": "limitcode_decrease_chat_font_size"
+    },
+    {
+        "caption": "Limitcode: Reset Chat Font Size",
+        "command": "limitcode_reset_chat_font_size"
+    },
+    {
         "caption": "Limitcode: New Chat",
         "command": "limitcode_new_chat"
     },

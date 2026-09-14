@@ -1,0 +1,9 @@
+Limitcode 1.1.3 - Chat font size
+
+The chat now supports an independent font size without changing the editor:
+
+* Set "chat_font_size" to "auto" or a number in Limitcode.sublime-settings.
+* Use Increase Chat Font Size, Decrease Chat Font Size, or Reset Chat Font Size.
+* Add optional key bindings for chat-only font size controls.
+
+The commands have no keyboard shortcuts by default.

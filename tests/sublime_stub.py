@@ -12,6 +12,9 @@ class Settings:
     def set(self, key, value):
         self._store[key] = value
 
+    def erase(self, key):
+        self._store.pop(key, None)
+
 
 class CompletionList:
     def set_completions(self, completions, flags=None):

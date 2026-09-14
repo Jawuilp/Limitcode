@@ -726,6 +726,18 @@ class ChatView:
         self._view.settings().set("rulers", [])
         self._view.settings().set("font_options", ["no_italic"])
 
+        chat_font_size = sublime.load_settings("Limitcode.sublime-settings").get(
+            "chat_font_size", "auto"
+        )
+        if (
+            isinstance(chat_font_size, (int, float))
+            and not isinstance(chat_font_size, bool)
+            and chat_font_size > 0
+        ):
+            self._view.settings().set("font_size", chat_font_size)
+        else:
+            self._view.settings().erase("font_size")
+
         # Disable linters to avoid visual noise like "Unexpected character" errors
         self._view.settings().set("lsp_active", False)
         self._view.settings().set("SublimeLinter", False)

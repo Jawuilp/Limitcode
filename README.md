@@ -98,6 +98,9 @@ your machine.
 - `Limitcode: Send to Agent`
 - `Limitcode: Change Provider`
 - `Limitcode: Change Model`
+- `Limitcode: Increase Chat Font Size`
+- `Limitcode: Decrease Chat Font Size`
+- `Limitcode: Reset Chat Font Size`
 - `Limitcode: Set Reasoning Effort`
 - `Limitcode: Toggle Show Thoughts`
 - `Limitcode: Setup Provider API Key`
@@ -123,6 +126,46 @@ bindings in the user pane. For example:
 ]
 ```
 
+### Optional chat font shortcuts
+
+The chat has its own font size and does not change the editor font size. It is
+disabled by default in the configuration with `"chat_font_size": "auto"`, which
+makes the chat inherit Sublime's global `font_size`.
+
+To use a fixed size, add a numeric value to the user settings:
+
+```json
+{
+    "chat_font_size": 11
+}
+```
+
+The `Increase Chat Font Size`, `Decrease Chat Font Size`, and `Reset Chat Font
+Size` commands are available from the Command Palette. They only work when the
+Limitcode chat view is active and save the selected chat size for future chats.
+
+Limitcode does not assign `Ctrl+Plus` or `Ctrl+Minus` by default. To add your
+own shortcuts, use `Limitcode: Open Key Bindings` and add bindings such as:
+
+```json
+[
+    {
+        "keys": ["ctrl+="],
+        "command": "limitcode_increase_chat_font_size",
+        "context": [
+            { "key": "setting.limitcode_chat_view", "operator": "equal", "operand": true }
+        ]
+    },
+    {
+        "keys": ["ctrl+-"],
+        "command": "limitcode_decrease_chat_font_size",
+        "context": [
+            { "key": "setting.limitcode_chat_view", "operator": "equal", "operand": true }
+        ]
+    }
+]
+```
+
 ## Configuration
 
 ```json
@@ -136,6 +179,7 @@ bindings in the user pane. For example:
     "temperature": "auto",
     "max_tokens": 8192,
     "max_iterations": 50,
+    "chat_font_size": "auto",
     "reasoning_effort": "off",
     "show_thoughts": false
 }
@@ -143,7 +187,8 @@ bindings in the user pane. For example:
 
 `temperature` accepts `"auto"` or a number. `max_tokens` accepts a positive
 integer or `"auto"`. Reasoning effort can be `off`, `low`, `medium` or `high`;
-unsupported models ignore it.
+unsupported models ignore it. `chat_font_size` accepts `"auto"` or a positive
+number and applies only to the Limitcode chat view.
 
 ## Limitcode Pro
 

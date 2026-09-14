@@ -43,6 +43,70 @@ def _refresh_chat_status_bar(window: sublime.Window) -> None:
         pass
 
 
+CHAT_FONT_SIZE_MIN = 6
+CHAT_FONT_SIZE_MAX = 72
+
+
+def _coerce_font_size(value: Any) -> Optional[int]:
+    if isinstance(value, bool):
+        return None
+    try:
+        size = int(value)
+    except (TypeError, ValueError):
+        return None
+    return size if size > 0 else None
+
+
+class _LimitcodeChatFontSizeCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return bool(
+            self.view
+            and self.view.settings().get("limitcode_chat_view", False)
+        )
+
+    def _set_font_size(self, size: int) -> None:
+        settings = sublime.load_settings("Limitcode.sublime-settings")
+        settings.set("chat_font_size", size)
+        sublime.save_settings("Limitcode.sublime-settings")
+        self.view.settings().set("font_size", size)
+        sublime.status_message(f"Limitcode: Chat font size {size}")
+
+    def _current_font_size(self, settings) -> int:
+        configured = _coerce_font_size(settings.get("chat_font_size", "auto"))
+        if configured is not None:
+            return configured
+        return _coerce_font_size(self.view.settings().get("font_size")) or 10
+
+
+class LimitcodeIncreaseChatFontSizeCommand(_LimitcodeChatFontSizeCommand):
+    """Increase the font size of the active Limitcode chat view."""
+
+    def run(self, edit):
+        settings = sublime.load_settings("Limitcode.sublime-settings")
+        current = self._current_font_size(settings)
+        self._set_font_size(min(current + 1, CHAT_FONT_SIZE_MAX))
+
+
+class LimitcodeDecreaseChatFontSizeCommand(_LimitcodeChatFontSizeCommand):
+    """Decrease the font size of the active Limitcode chat view."""
+
+    def run(self, edit):
+        settings = sublime.load_settings("Limitcode.sublime-settings")
+        current = self._current_font_size(settings)
+        self._set_font_size(max(current - 1, CHAT_FONT_SIZE_MIN))
+
+
+class LimitcodeResetChatFontSizeCommand(_LimitcodeChatFontSizeCommand):
+    """Return the chat view to Sublime's global font size."""
+
+    def run(self, edit):
+        settings = sublime.load_settings("Limitcode.sublime-settings")
+        settings.set("chat_font_size", "auto")
+        sublime.save_settings("Limitcode.sublime-settings")
+        self.view.settings().erase("font_size")
+        sublime.status_message("Limitcode: Chat font size reset")
+
+
 
 
 class LimitcodeOpenChatCommand(sublime_plugin.WindowCommand):
