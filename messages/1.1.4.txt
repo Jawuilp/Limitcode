@@ -1,0 +1,6 @@
+Limitcode 1.1.4 - Menu integration fix
+
+Fixed the placement of Limitcode entries in Sublime Text menus.
+
+The Limitcode submenu now appears under Tools, and Limitcode settings remain
+available under Preferences > Package Settings.

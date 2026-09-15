@@ -1,5 +1,18 @@
 [
     {
+        "id": "tools",
+        "children": [
+            {"caption": "-"},
+            {"caption": "Limitcode", "mnemonic": "L", "children": [
+                {"command": "limitcode_open_chat", "caption": "Open Chat"},
+                {"command": "limitcode_send_to_agent", "caption": "Send to Agent"},
+                {"command": "limitcode_change_provider", "caption": "Change Provider"},
+                {"command": "limitcode_change_model", "caption": "Change Model"},
+                {"command": "limitcode_clear_chat", "caption": "Clear Chat"}
+            ]}
+        ]
+    },
+    {
         "id": "preferences",
         "children": [
             {
@@ -24,19 +37,6 @@
                     }
                 ]
             }
-        ]
-    },
-    {
-        "id": "tools",
-        "children": [
-            {"caption": "-"},
-            {"caption": "Limitcode", "mnemonic": "L", "children": [
-                {"command": "limitcode_open_chat", "caption": "Open Chat"},
-                {"command": "limitcode_send_to_agent", "caption": "Send to Agent"},
-                {"command": "limitcode_change_provider", "caption": "Change Provider"},
-                {"command": "limitcode_change_model", "caption": "Change Model"},
-                {"command": "limitcode_clear_chat", "caption": "Clear Chat"}
-            ]}
         ]
     }
 ]
