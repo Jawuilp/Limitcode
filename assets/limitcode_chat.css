@@ -1,0 +1,40 @@
+#limitcode-status {
+    --limitcode-chip-background: color(var(--background) blend(var(--foreground) 93%));
+    --limitcode-chip-border: color(var(--foreground) alpha(0.08));
+    --limitcode-chip-text: color(var(--foreground) alpha(0.75));
+    --limitcode-chip-link: var(--accent, #58a6ff);
+    --limitcode-chip-muted: color(var(--foreground) alpha(0.4));
+    --limitcode-chip-radius: 4px;
+    --limitcode-chip-padding: 3px 9px;
+}
+
+#limitcode-status .chips {
+    margin: 0.3rem 0 1.2rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    line-height: 3;
+}
+
+#limitcode-status .chip {
+    display: inline-block;
+    vertical-align: top;
+    white-space: nowrap;
+    background-color: var(--limitcode-chip-background);
+    border: 1px solid var(--limitcode-chip-border);
+    border-radius: var(--limitcode-chip-radius);
+    padding: var(--limitcode-chip-padding);
+    color: var(--limitcode-chip-text);
+    margin-right: 4px;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+#limitcode-status .chip a {
+    color: var(--limitcode-chip-link);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+#limitcode-status .dim {
+    color: var(--limitcode-chip-muted);
+}

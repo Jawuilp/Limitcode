@@ -13,6 +13,7 @@ import datetime
 from typing import List, Dict, Any, Optional, Tuple
 
 from .storage import history_dir
+from .chat_styles import load_chat_styles
 
 class ChatSession:
     """Manages a single chat session with message history and persistence."""
@@ -557,33 +558,12 @@ class ChatView:
             
         display_model_escaped = display_model.replace(" ", "&nbsp;")
         provider_display_escaped = provider_display.replace(" ", "&nbsp;")
+        chat_styles = load_chat_styles()
 
         html = f"""
         <body id="limitcode-status">
             <style>
-                .chips {{
-                    margin: 0.3rem 0 0.8rem 0;
-                    font-family: var(--font-mono);
-                    font-size: 0.82em;
-                    line-height: 2.2;
-                }}
-                .chip {{
-                    display: inline;
-                    background-color: color(var(--background) blend(var(--foreground) 93%));
-                    border: 1px solid color(var(--foreground) alpha(0.08));
-                    border-radius: 4px;
-                    padding: 3px 9px;
-                    color: color(var(--foreground) alpha(0.75));
-                    margin-right: 4px;
-                }}
-                .chip a {{
-                    color: var(--accent, #58a6ff);
-                    text-decoration: none;
-                    font-weight: bold;
-                }}
-                .dim {{
-                    color: color(var(--foreground) alpha(0.4));
-                }}
+                {chat_styles}
             </style>
             <div class="chips">
                 <span class="chip">🧠&nbsp;<a href="change_model">{display_model_escaped}</a>&nbsp;<span class="dim">·&nbsp;{provider_display_escaped}</span></span><span class="chip">⚙&nbsp;<a href="open_settings">Config</a></span>

@@ -16,6 +16,17 @@
     // Models without reasoning support ignore it or keep current behavior.
     "reasoning_effort": "off",
     "chat_bottom_spacer_height": "16rem",
+    // Optional chat status-bar styling. Empty values inherit the active theme.
+    "chat_style": {
+        "chip_background": "",
+        "chip_border": "",
+        "chip_text": "",
+        "link_color": "",
+        "muted_text": "",
+        "muted_opacity": 0.4,
+        "chip_radius": 4,
+        "chip_padding": "3px 9px"
+    },
     "show_thoughts": false,
     "hide_minimap_in_chat": true,
     // Mirror the plugin console to history/sublime_console.log and trace
