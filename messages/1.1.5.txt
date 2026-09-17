@@ -1,0 +1,27 @@
+Limitcode 1.1.5 - Chat style customization
+
+The chat status bar can now be customized to match your Sublime Text theme.
+
+New chat_style settings in Limitcode.sublime-settings:
+
+    "chat_style": {
+        "chip_background": "",
+        "chip_border": "",
+        "chip_text": "",
+        "link_color": "",
+        "muted_text": "",
+        "muted_opacity": 0.4,
+        "chip_radius": 4,
+        "chip_padding": "3px 9px"
+    }
+
+Empty values inherit the active theme. This fixes low-contrast chips and
+muted text on themes such as Monokai Pro.
+
+For advanced changes, create Packages/User/Limitcode/chat.css. It loads after
+the base CSS and after chat_style, and can override the --limitcode-* variables.
+
+The chat status bar also got layout fixes: chips no longer overlap when the
+panel is narrow.
+
+See the README section "Chat style customization" for details.

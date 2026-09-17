@@ -190,6 +190,83 @@ integer or `"auto"`. Reasoning effort can be `off`, `low`, `medium` or `high`;
 unsupported models ignore it. `chat_font_size` accepts `"auto"` or a positive
 number and applies only to the Limitcode chat view.
 
+## Chat style customization
+
+The chat status bar can follow your Sublime Text theme without changing the
+rest of the editor.
+
+### Quick option: `chat_style`
+
+Adjust only what you need in `Limitcode.sublime-settings`:
+
+```json
+"chat_style": {
+    "chip_background": "",
+    "chip_border": "",
+    "chip_text": "",
+    "link_color": "",
+    "muted_text": "",
+    "muted_opacity": 0.4,
+    "chip_radius": 4,
+    "chip_padding": "3px 9px"
+}
+```
+
+| Option | What it controls |
+| --- | --- |
+| `chip_background` | Chip background |
+| `chip_border` | Border color |
+| `chip_text` | Chip text color |
+| `link_color` | Link color (model, mode, config) |
+| `muted_text` | Secondary text color (provider) |
+| `muted_opacity` | Secondary text opacity (`0` to `1`) |
+| `chip_radius` | Corner radius |
+| `chip_padding` | Inner padding of the chip |
+
+Empty values inherit the active theme.
+
+Example for dark themes with low contrast:
+
+```json
+"chat_style": {
+    "link_color": "#ffcc66",
+    "muted_opacity": 0.8,
+    "chip_radius": 3
+}
+```
+
+### Advanced option: `chat.css`
+
+Create `Packages/User/Limitcode/chat.css` to override anything not exposed in
+the settings:
+
+```css
+#limitcode-status {
+    --limitcode-chip-background: #252a34;
+    --limitcode-chip-border: #88c0d0;
+    --limitcode-chip-link: #ffcc66;
+    --limitcode-chip-muted: #c8d3e0;
+}
+
+#limitcode-status .chip {
+    border-radius: 6px;
+}
+```
+
+The file belongs to the user and is not overwritten on updates.
+
+Priority order:
+
+```text
+Package base CSS
+      |
+      v
+chat_style (settings)
+      |
+      v
+Packages/User/Limitcode/chat.css
+```
+
 ## Limitcode Pro
 
 <a href="https://limitcode.jawuil.dev/?utm_source=github&utm_medium=readme" target="_blank" rel="noopener">Limitcode Pro</a>
