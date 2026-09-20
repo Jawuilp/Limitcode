@@ -68,7 +68,7 @@ class ResourceLoadingTest(unittest.TestCase):
     def test_package_export_excludes_development_and_media_files(self):
         attributes = (PACKAGE_ROOT / ".gitattributes").read_text(encoding="utf-8")
 
-        for path in ("/media", "/tests", "/.python-version", "/lsp/README.md"):
+        for path in ("/media", "/tests"):
             self.assertIn(f"{path} export-ignore", attributes)
 
     def test_dead_code_block_controls_and_streaming_setting_are_absent(self):

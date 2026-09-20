@@ -1,0 +1,8 @@
+Limitcode 1.1.6 - LSP fix
+
+LSP diagnostics now reach the agent again after edits. They were read
+through an API that does not exist in Sublime Text, so language-server
+errors were silently ignored.
+
+With the LSP package installed, errors in an edited file are reported
+back to the agent so it can fix them.
