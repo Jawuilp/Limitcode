@@ -286,6 +286,28 @@ editor-native workflow and adds:
 Pro runs entirely inside Sublime Text with a configurable permission model, and
 is distributed as a packaged release rather than source.
 
+Pro users can report bugs and suggestions here too, or by email. If you open an
+issue, add the `[Pro]` tag to the end of the title so Pro reports are easy to
+tell apart from the OSS ones.
+
+## Feedback and issues
+
+Have a comment, question, suggestion or bug report? Open an issue in this
+repository — it is the preferred place for anything reproducible and public.
+You can also reach out by email if you prefer.
+
+If your report is about Limitcode Pro, add the `[Pro]` tag to the end of the
+title (for example, `Too many logs in console! [Pro]`) so Pro and OSS issues
+are easy to tell apart.
+
+```text
+hola@jawuil.dev
+```
+
+Please do not paste provider API keys or tokens, personal data, or logs and
+screenshots that contain your own code, prompts or file paths. For anything
+sensitive, use email instead.
+
 ## Development
 
 Run the test suite from the repository root:
