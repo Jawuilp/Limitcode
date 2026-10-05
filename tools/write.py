@@ -1,13 +1,13 @@
 import os
 import sublime
 from typing import Dict, Any
-from .base import Tool, decode_unicode_escapes, resolve_open_file_path
+from .base import Tool, resolve_open_file_path
 
 class WriteToFileTool(Tool):
     def __init__(self):
         super().__init__("write_to_file", "Write content to a file")
 
-    def execute(self, file_path: str, content: str) -> Dict[str, Any]:
+    def execute(self, file_path: str, content: str, escape_gate=None) -> Dict[str, Any]:
         try:
             resolved_path, resolution_error = resolve_open_file_path(file_path)
             if not resolved_path:
@@ -24,7 +24,10 @@ class WriteToFileTool(Tool):
             if not view:
                 return {"success": False, "error": "File is not open in any tab"}
 
-            content = decode_unicode_escapes(content)
+            # Issue #9: decode escapes only when the session gate has proof
+            # that the provider corrupts tool-call arguments.
+            if escape_gate is not None:
+                content = escape_gate.prepare_write_content(content)
 
             import threading
             completed = threading.Event()

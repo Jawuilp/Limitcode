@@ -59,6 +59,10 @@ def install_sublime_stub(store=None):
     module.load_settings = lambda name: Settings(module._settings_store)
     module.save_settings = lambda name: None
     module.status_message = lambda message: None
+    # Run scheduled callbacks synchronously so buffer writes/edits are
+    # observable in tests without an event loop (previously only patched
+    # ad-hoc by test_agent_runner, breaking standalone runs of other files).
+    module.set_timeout = lambda f, delay=0: f()
     module.packages_path = lambda: module._packages_path
     module.active_window = lambda: module._active_window
     module.Window = getattr(module, "Window", Window)

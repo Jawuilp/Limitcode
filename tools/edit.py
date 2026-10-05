@@ -8,7 +8,7 @@ class EditFileTool(Tool):
     def __init__(self):
         super().__init__("edit_file", "Edit specific parts of a file")
 
-    def execute(self, file_path: str, old_str: str, new_str: str) -> Dict[str, Any]:
+    def execute(self, file_path: str, old_str: str, new_str: str, escape_gate=None) -> Dict[str, Any]:
         try:
             resolved_path, resolution_error = resolve_open_file_path(file_path)
             if not resolved_path:
@@ -26,14 +26,24 @@ class EditFileTool(Tool):
                 return {"success": False, "error": "File is not open in any tab"}
 
             content = view.substr(sublime.Region(0, view.size()))
-            old_str = decode_unicode_escapes(old_str)
-            new_str = decode_unicode_escapes(new_str)
 
-            # Use advanced fuzzy matching
+            # Match the raw arguments first (issue #9: models legitimately
+            # write literal \uXXXX text that must stay untouched). Only if the
+            # raw match fails do we retry with decoded arguments — that retry
+            # succeeding is the evidence that the provider corrupts escapes.
             try:
                 new_content, strategy = apply_edit(content, old_str, new_str)
-            except ValueError as e:
-                return {"success": False, "error": str(e)}
+            except ValueError as raw_error:
+                decoded_old_str = decode_unicode_escapes(old_str)
+                decoded_new_str = decode_unicode_escapes(new_str)
+                if decoded_old_str == old_str and decoded_new_str == new_str:
+                    return {"success": False, "error": str(raw_error)}
+                try:
+                    new_content, strategy = apply_edit(content, decoded_old_str, decoded_new_str)
+                except ValueError as decoded_error:
+                    return {"success": False, "error": str(decoded_error)}
+                if escape_gate is not None:
+                    escape_gate.mark_corruption_proven()
 
             import threading
             completed = threading.Event()

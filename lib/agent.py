@@ -17,6 +17,7 @@ import platform
 from typing import List, Dict, Any, Optional, Callable
 
 from .agent_types import AgentResponse
+from .escape_gate import EscapeGate
 from ..providers.base import BaseProvider
 from ..tools import ToolManager
 from ..tools.tool_schemas import get_tools_for_provider, get_required_args_for_tool
@@ -89,6 +90,7 @@ class Agent:
         self.disabled_tool_names = set(disabled_tool_names or [])
         self._active_child_agent = None
         self.window = None
+        self.escape_gate = EscapeGate()
 
         self.current_step = 0
         self.prompt_manager = PromptManager()
@@ -232,6 +234,11 @@ class Agent:
                     "success": False,
                     "error": f"Cancelled before executing {tool_name}"
                 }
+
+            # Evidence-based unicode-escape decoding (issue #9): the gate rides
+            # along so write/edit can decide using session-level evidence.
+            if tool_name in ("write_to_file", "edit_file"):
+                resolved_args["escape_gate"] = self.escape_gate
 
             # Execute the tool
             result = self.tool_manager.execute_tool(tool_name, **resolved_args)

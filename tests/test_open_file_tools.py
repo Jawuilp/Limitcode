@@ -216,7 +216,7 @@ class ViewBasedToolsTest(unittest.TestCase):
         self.assertTrue(result.get("success"))
         self.assertEqual(view._content, "hello sublime")
 
-    def test_write_decodes_unicode_escapes_without_changing_paths(self):
+    def test_write_preserves_unicode_escapes_without_gate(self):
         import sublime
         from Limitcode.tools.write import WriteToFileTool
 
@@ -229,23 +229,69 @@ class ViewBasedToolsTest(unittest.TestCase):
         )
 
         self.assertTrue(result.get("success"))
+        self.assertEqual(view._content, r"Espa\u00f1a \uD83D\uDE80 C:\new\test")
+
+    def test_write_decodes_unicode_escapes_when_gate_proven(self):
+        import sublime
+        from Limitcode.lib.escape_gate import EscapeGate
+        from Limitcode.tools.write import WriteToFileTool
+
+        view = MockView("c:/project/index.txt", content="original")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        gate = EscapeGate()
+        gate.mark_corruption_proven()
+        result = WriteToFileTool().execute(
+            "index.txt",
+            r"Espa\u00f1a \uD83D\uDE80 C:\new\test",
+            escape_gate=gate,
+        )
+
+        self.assertTrue(result.get("success"))
         self.assertEqual(view._content, "España 🚀 C:\\new\\test")
 
     def test_edit_matches_unicode_escapes(self):
         import sublime
+        from Limitcode.lib.escape_gate import EscapeGate
         from Limitcode.tools.edit import EditFileTool
 
         view = MockView("c:/project/index.txt", content="España 🚀")
         sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
 
+        gate = EscapeGate()
         result = EditFileTool().execute(
             "index.txt",
             old_str=r"Espa\u00f1a \uD83D\uDE80",
             new_str=r"Edici\u00f3n lista",
+            escape_gate=gate,
         )
 
         self.assertTrue(result.get("success"))
         self.assertEqual(view._content, "Edición lista")
+        self.assertTrue(gate.corruption_proven)
+
+    def test_edit_matches_literal_unicode_escapes_without_decoding(self):
+        import sublime
+        from Limitcode.lib.escape_gate import EscapeGate
+        from Limitcode.tools.edit import EditFileTool
+
+        view = MockView(
+            "c:/project/data.json",
+            content='{"arrow": "\\u2192"}',
+        )
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        gate = EscapeGate()
+        result = EditFileTool().execute(
+            "data.json",
+            old_str='{"arrow": "\\u2192"}',
+            new_str='{"arrow": "\\u2190"}',
+            escape_gate=gate,
+        )
+
+        self.assertTrue(result.get("success"))
+        self.assertEqual(view._content, '{"arrow": "\\u2190"}')
+        self.assertFalse(gate.corruption_proven)
 
 
 if __name__ == "__main__":
