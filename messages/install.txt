@@ -1,0 +1,28 @@
+Limitcode - AI pair programming for Sublime Text
+
+Getting started:
+
+1. Run "Limitcode: Setup Provider API Key" from the Command Palette.
+   Cloud providers need a key; Ollama and LM Studio work without one.
+2. Run "Limitcode: Open Chat".
+3. Open the files you want the agent to read or edit, then send a
+   message.
+
+How it works:
+
+The agent only sees and modifies files that are open in your window -
+no hidden filesystem scans, no shell access, and every edit lands in a
+file you can review immediately. Press Escape to stop a running
+response.
+
+Useful commands: "Limitcode: Change Provider", "Limitcode: Change
+Model", "Limitcode: Open Settings".
+
+Want the fully autonomous version? Limitcode Pro searches the project,
+runs commands and manages its own context:
+https://limitcode.jawuil.dev
+
+Found a bug or something that does not work? You are invited to open an
+issue: https://github.com/Jawuilp/Limitcode/issues
+
+Docs: https://github.com/Jawuilp/Limitcode

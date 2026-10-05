@@ -1,0 +1,9 @@
+Limitcode 1.1.7 - Literal Unicode escapes preserved (issue #9)
+
+edit_file and write_to_file no longer rewrite literal \uXXXX sequences.
+Content like {"arrow": "\u2192"} in JSON, JavaScript or regexes was
+silently converted to the actual character, changing the written file.
+
+Escapes are now decoded only when a tool match proves the provider
+corrupted the arguments (seen with some providers), so broken-provider
+repair keeps working while legitimate escape text is left untouched.
