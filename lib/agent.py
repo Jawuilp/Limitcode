@@ -847,6 +847,13 @@ class Agent:
                                 "Please try again or switch to a different model."
                             )
 
+                        # Surface the fallback in the chat: nothing was streamed
+                        # for this turn and the runner only appends result.error,
+                        # so without this the user would see no note at all
+                        # after the retries (issue #19).
+                        if self.on_text_chunk:
+                            self.on_text_chunk(all_content)
+
                     log_info("[AGENT] No tool calls, loop complete", {
                         "content_len": len(all_content),
                         "iterations": self.current_step

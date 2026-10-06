@@ -41,13 +41,14 @@ def response(content="", reasoning="", finish_reason="stop"):
 
 
 class EmptyResponseRecoveryTest(unittest.TestCase):
-    def _agent(self, provider):
+    def _agent(self, provider, on_text_chunk=None):
         return Agent(
             provider=provider,
             provider_type="openai",
             tool_manager=FakeToolManager(),
             system_prompt="",
             max_iterations=5,
+            on_text_chunk=on_text_chunk,
         )
 
     def test_initial_empty_response_retries_without_tools(self):
@@ -77,6 +78,25 @@ class EmptyResponseRecoveryTest(unittest.TestCase):
         self.assertIn("no visible final answer", result.content)
         self.assertIn("internal analysis", result.content)
         self.assertEqual(len(provider.calls), 3)
+
+    def test_empty_response_fallback_is_streamed_to_chat(self):
+        # The chat only renders what arrives through on_text_chunk; if the
+        # fallback never streams, the user sees nothing at all (issue #19).
+        chunks = []
+        provider = FakeProvider([
+            response(content=""),
+            response(content=""),
+            response(content=""),
+        ])
+
+        with tempfile.TemporaryDirectory() as directory:
+            result = self._agent(provider, on_text_chunk=chunks.append).run(
+                "hola", directory=directory
+            )
+
+        streamed = "".join(chunks)
+        self.assertIn("empty response after multiple retries", streamed)
+        self.assertEqual(result.content, streamed)
 
     def test_cancel_closes_provider_request_and_suppresses_socket_error(self):
         class CancelledProvider(FakeProvider):
