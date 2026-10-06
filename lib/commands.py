@@ -665,7 +665,11 @@ class LimitcodeCancelRequestCommand(sublime_plugin.WindowCommand):
             chat._active_run_token = None
             sublime.status_message("Limitcode: Cancelling request...")
             chat.hide_loading()
-            chat.append_text("\n\n[Cancelling...]")
+            # The turn is finalized right here (prepare_for_user below), and
+            # the normal completion path is skipped for cancelled runs, so this
+            # text is terminal - it must read as a resolved state, not as a
+            # placeholder that nothing would ever replace (issue #20).
+            chat.append_text("\n\n[Cancelled]")
             chat.prepare_for_user()
             chat.on_stream_complete()
             chat._current_agent = None
