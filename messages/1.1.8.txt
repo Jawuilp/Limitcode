@@ -1,0 +1,8 @@
+Limitcode 1.1.8 - Gemini/Anthropic hotfix (issue #10)
+
+1.1.7 ended the chat turn with "Object of type EscapeGate is not JSON
+serializable" when the provider passed tool arguments as a dict
+(Gemini, Anthropic). The file edit itself had already been applied.
+
+Tool arguments are now copied before the session escape gate is
+injected, so the provider's original dict stays JSON-serializable.
