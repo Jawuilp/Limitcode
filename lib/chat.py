@@ -616,7 +616,7 @@ class ChatView:
             welcome = (
                 "# Limitcode\n\n"
                 "Type a message and press Enter to send.\n\n"
-                "**Providers:** OpenAI, Anthropic, Gemini, DeepSeek, Ollama, LM Studio\n"
+                "**Providers:** OpenAI, Anthropic, Gemini, DeepSeek, Ollama, LM Studio, OpenRouter, Moonshot AI (Kimi)\n"
                 "**Tools:** read_file, write_to_file, edit_file\n\n"
                 "**Tips:**\n"
                 "- Type `@` to reference files\n"
