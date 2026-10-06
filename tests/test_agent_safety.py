@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 import unittest
@@ -96,6 +97,34 @@ class AgentSafetyTest(unittest.TestCase):
         self.assertFalse(result["success"])
         self.assertTrue(result["truncated"])
         self.assertEqual(self.tool_manager.executed, [])
+
+    def test_execute_tool_does_not_mutate_provider_arguments(self):
+        # Providers like Gemini/Anthropic hand _execute_tool the same dict
+        # that lives on tc.arguments and is serialized into conversation
+        # history on the next turn (issue #10). The gate must reach the tool
+        # without leaking into that original dict.
+        original_args = {"file_path": "open.py", "content": "partial"}
+
+        self.agent._execute_tool("write_to_file", original_args, os.getcwd())
+
+        self.assertEqual(len(self.tool_manager.executed), 1)
+        _tool_name, kwargs = self.tool_manager.executed[0]
+        self.assertIn("escape_gate", kwargs)
+        self.assertIs(kwargs["escape_gate"], self.agent.escape_gate)
+
+        self.assertNotIn("escape_gate", original_args)
+        json.dumps(original_args)  # must stay JSON-serializable
+
+    def test_execute_tool_does_not_mutate_edit_arguments(self):
+        original_args = {"file_path": "open.py", "old_str": "a", "new_str": "b"}
+
+        self.agent._execute_tool("edit_file", original_args, os.getcwd())
+
+        self.assertEqual(len(self.tool_manager.executed), 1)
+        _tool_name, kwargs = self.tool_manager.executed[0]
+        self.assertIn("escape_gate", kwargs)
+        self.assertNotIn("escape_gate", original_args)
+        json.dumps(original_args)
 
 
 if __name__ == "__main__":

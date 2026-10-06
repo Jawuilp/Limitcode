@@ -208,6 +208,14 @@ class Agent:
             if not isinstance(resolved_args, dict):
                 resolved_args = {}
 
+            # Copy before injecting session state (issue #10): providers that
+            # pass tool arguments as a dict (Gemini, Anthropic) share the same
+            # object as tc.arguments, which is serialized back into the
+            # conversation history on the next turn. Injecting the EscapeGate
+            # into that shared dict made json.dumps fail with
+            # "Object of type EscapeGate is not JSON serializable".
+            resolved_args = dict(resolved_args)
+
             required_args = get_required_args_for_tool(tool_name)
             missing_args = [
                 arg for arg in required_args
