@@ -98,6 +98,25 @@ class EmptyResponseRecoveryTest(unittest.TestCase):
         self.assertIn("empty response after multiple retries", streamed)
         self.assertEqual(result.content, streamed)
 
+    def test_relative_file_path_is_passed_to_the_tool_unchanged(self):
+        received = {}
+
+        class RecordingToolManager:
+            def execute_tool(self, tool_name, **kwargs):
+                received.update(kwargs)
+                return {"success": True}
+
+        agent = Agent(
+            provider=FakeProvider([]),
+            provider_type="openai",
+            tool_manager=RecordingToolManager(),
+            system_prompt="",
+        )
+
+        agent._execute_tool("read_file", {"file_path": "calc.py"}, "C:/somewhere/else")
+
+        self.assertEqual(received["file_path"], "calc.py")
+
     def test_cancel_closes_provider_request_and_suppresses_socket_error(self):
         class CancelledProvider(FakeProvider):
             def __init__(self):
