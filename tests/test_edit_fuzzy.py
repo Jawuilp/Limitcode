@@ -64,6 +64,14 @@ class EditFuzzyTest(unittest.TestCase):
 
         self.assertIn("Could not find", str(cm.exception))
 
+    def test_apply_edit_keeps_file_indentation_for_fuzzy_match(self):
+        content = "def f():\n    if x:\n        run()\n    return 1\n"
+
+        new_content, strategy = apply_edit(content, "if x:\n    run()", "if y:\n    stop()")
+
+        self.assertEqual(strategy, "line_trimmed")
+        self.assertEqual(new_content, "def f():\n    if y:\n        stop()\n    return 1\n")
+
     def test_find_edit_replace_all_returns_multiple_unique_matches(self):
         matches = find_edit("one\ntwo\none\n", "one", replace_all=True)
 

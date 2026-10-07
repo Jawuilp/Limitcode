@@ -392,6 +392,38 @@ def find_edit(content: str, find: str, replace_all: bool = False) -> List[MatchR
     return results
 
 
+_LINE_BASED_STRATEGIES = ("line_trimmed", "block_anchor", "indentation_flexible", "context_aware")
+
+
+def _first_indent(text: str) -> Optional[str]:
+    """Leading whitespace of the first non-blank line, or None if all blank."""
+    for line in text.split("\n"):
+        if line.strip():
+            return line[:len(line) - len(line.lstrip())]
+    return None
+
+
+def _reindent(find: str, matched: str, replace: str) -> str:
+    """Move replace from the indentation of find to the indentation of the matched lines.
+
+    Only applies when replace starts at the same indentation as find, i.e. the
+    caller used one consistent (wrong) basis for both.
+    """
+    find_indent = _first_indent(find)
+    matched_indent = _first_indent(matched)
+    if find_indent is None or matched_indent is None or find_indent == matched_indent:
+        return replace
+    if _first_indent(replace) != find_indent:
+        return replace
+
+    lines = []
+    for line in replace.split("\n"):
+        if line.strip() and line.startswith(find_indent):
+            line = matched_indent + line[len(find_indent):]
+        lines.append(line)
+    return "\n".join(lines)
+
+
 def apply_edit(content: str, find: str, replace: str, replace_all: bool = False) -> Tuple[str, str]:
     """
     Apply an edit to content using fuzzy matching.
@@ -422,7 +454,13 @@ def apply_edit(content: str, find: str, replace: str, replace_all: bool = False)
             f"The edit tool tried 8 different matching strategies but none found a match. "
             f"Make sure the text you're trying to replace exists in the file."
         )
-    
+
+    if matches[0].strategy in _LINE_BASED_STRATEGIES:
+        # These strategies match whole lines ignoring indentation, so keep the
+        # file's indentation instead of the one the caller guessed (issue #11).
+        matched_text = content_normalized[matches[0].start:matches[0].end]
+        replace_normalized = _reindent(find_normalized, matched_text, replace_normalized)
+
     # Apply replacements (in reverse order to preserve positions)
     new_content = content_normalized
     for match in reversed(matches):
