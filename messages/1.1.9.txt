@@ -1,0 +1,15 @@
+Limitcode 1.1.9 - Nine issues fixed (#11-#21)
+
+edit_file keeps the file's indentation when a fuzzy match is used (#11),
+and relative file paths are resolved against your open tabs instead of
+Sublime's working directory (#17).
+
+read_file returns a clear error when start_line is past the end of the
+file instead of an empty success (#14). write_to_file writes LF into the
+buffer so Windows files keep CRLF instead of getting CR CR LF (#13).
+
+A streamed answer cut off by a dropped connection now reports an error
+instead of looking complete (#18). An empty model reply now shows its
+fallback message in the chat (#19), Cancel leaves [Cancelled] in the chat
+(#20), and the welcome text lists all eight providers (#21). Shown
+thoughts are headed "Reasoning" (#16).
