@@ -64,6 +64,28 @@ class EditFuzzyTest(unittest.TestCase):
 
         self.assertIn("Could not find", str(cm.exception))
 
+    def test_apply_edit_keeps_file_indentation_for_fuzzy_match(self):
+        content = "def f():\n    if x:\n        run()\n    return 1\n"
+
+        new_content, strategy = apply_edit(content, "if x:\n    run()", "if y:\n    stop()")
+
+        self.assertEqual(strategy, "line_trimmed")
+        self.assertEqual(new_content, "def f():\n    if y:\n        stop()\n    return 1\n")
+
+    def test_apply_edit_rejects_several_matches(self):
+        with self.assertRaises(ValueError) as cm:
+            apply_edit("a = 1\nb = 2\na = 1\n", "a = 1", "a = 3")
+
+        self.assertIn("2 times", str(cm.exception))
+
+    def test_apply_edit_rejects_several_fuzzy_matches(self):
+        content = "  go()\n  stop()\n  go()\n  stop()\n"
+
+        with self.assertRaises(ValueError) as cm:
+            apply_edit(content, "go()\nstop()", "halt()")
+
+        self.assertIn("2 times", str(cm.exception))
+
     def test_find_edit_replace_all_returns_multiple_unique_matches(self):
         matches = find_edit("one\ntwo\none\n", "one", replace_all=True)
 

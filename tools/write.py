@@ -29,6 +29,15 @@ class WriteToFileTool(Tool):
             if escape_gate is not None:
                 content = escape_gate.prepare_write_content(content)
 
+            # The buffer keeps "\n" internally and Sublime writes the file's own
+            # line endings on save; a "\r\n" here would be saved as "\r\r\n"
+            # (issue #13).
+            content = content.replace("\r\n", "\n")
+
+            # Saving would also write out text the user typed but has not saved
+            # (issue #15), so only save a buffer that was clean before the write.
+            was_dirty = view.is_dirty()
+
             import threading
             completed = threading.Event()
             error_holder = []
@@ -36,7 +45,8 @@ class WriteToFileTool(Tool):
             def update_buffer():
                 try:
                     view.run_command("limitcode_write_buffer", {"content": content})
-                    view.run_command("save")
+                    if not was_dirty:
+                        view.run_command("save")
                 except Exception as e:
                     error_holder.append(str(e))
                 finally:
@@ -46,9 +56,14 @@ class WriteToFileTool(Tool):
             completed.wait()
             if error_holder:
                 return {"success": False, "error": error_holder[0]}
-                
+
             message = f"Successfully wrote to {file_path}"
-            
+            if was_dirty:
+                message += (
+                    ". The file had unsaved changes, so it was not saved; "
+                    "save it in Sublime Text to keep the write on disk."
+                )
+
             # Try to collect LSP diagnostics to notify agent of syntax/compilation errors
             try:
                 from ..lsp import LSPDiagnosticsCollector

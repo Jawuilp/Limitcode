@@ -388,6 +388,71 @@ class ProviderConfigTest(unittest.TestCase):
         provider._make_https_request = lambda *a, **k: mock_resp
         return provider
 
+    def _openai_stream(self, lines):
+        class Stream:
+            status = 200
+
+            def read(self):
+                return b""
+
+            def close(self):
+                pass
+
+            def __iter__(self):
+                return iter(lines)
+
+        provider = ProviderRegistry.create(
+            "openai",
+            api_key="test",
+            model="gpt-4o",
+            extra_config={"provider_name": "openai"},
+        )
+        provider._make_https_request = lambda *a, **k: Stream()
+        return provider
+
+    def _chunk(self, text="", finish=None):
+        choice = {"delta": {"content": text}}
+        if finish:
+            choice["finish_reason"] = finish
+        return b"data: " + json.dumps({"choices": [choice]}).encode() + b"\n"
+
+    def _run_stream(self, provider):
+        seen = []
+        result = provider.create_message_with_tools(
+            system_prompt="s",
+            messages=[{"role": "user", "content": "hi"}],
+            tools=[],
+            on_text_chunk=seen.append,
+        )
+        return result, seen
+
+    def test_stream_cut_off_without_finish_raises_connection_error(self):
+        provider = self._openai_stream([self._chunk("partial ans")])
+
+        with self.assertRaises(ConnectionError):
+            self._run_stream(provider)
+
+    def test_stream_with_finish_reason_or_done_is_complete(self):
+        for tail in ([self._chunk("end", finish="stop")], [self._chunk("end"), b"data: [DONE]\n"]):
+            provider = self._openai_stream([self._chunk("a ")] + tail)
+
+            result, seen = self._run_stream(provider)
+
+            self.assertEqual(result.content, "a end")
+            self.assertEqual(seen, ["a ", "end"])
+
+    def test_stream_cancelled_midway_is_not_an_error(self):
+        provider = self._openai_stream([self._chunk("a "), self._chunk("b")])
+
+        result = provider.create_message_with_tools(
+            system_prompt="s",
+            messages=[{"role": "user", "content": "hi"}],
+            tools=[],
+            on_cancel=lambda: True,
+        )
+
+        self.assertEqual(result.content, "")
+
     def test_anthropic_auth_error_raises_credits_error(self):
         from Limitcode.providers.base import CreditsError
 

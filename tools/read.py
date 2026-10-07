@@ -36,6 +36,15 @@ class ReadFileTool(Tool):
             start_line = max(1, start_line)
             end_line = min(end_line, total_lines)
 
+            if total_lines and start_line > end_line:
+                return {
+                    "success": False,
+                    "error": (
+                        f"Invalid range: start_line {start_line} is after the last line to read "
+                        f"({end_line}); the file has {total_lines} lines."
+                    )
+                }
+
             content = ''.join(lines[start_line - 1:end_line])
 
             # Truncate very large content

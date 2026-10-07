@@ -78,6 +78,43 @@ class EmptyResponseRecoveryTest(unittest.TestCase):
         self.assertIn("internal analysis", result.content)
         self.assertEqual(len(provider.calls), 3)
 
+    def test_fallback_message_is_streamed_to_the_chat(self):
+        provider = FakeProvider([response(content="")] * 3)
+        shown = []
+        agent = Agent(
+            provider=provider,
+            provider_type="openai",
+            tool_manager=FakeToolManager(),
+            system_prompt="",
+            on_text_chunk=shown.append,
+            max_iterations=5,
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            result = agent.run("hola", directory=directory)
+
+        self.assertEqual("".join(shown), result.content)
+        self.assertIn("empty response", "".join(shown))
+
+    def test_relative_file_path_is_passed_to_the_tool_unchanged(self):
+        received = {}
+
+        class RecordingToolManager:
+            def execute_tool(self, tool_name, **kwargs):
+                received.update(kwargs)
+                return {"success": True}
+
+        agent = Agent(
+            provider=FakeProvider([]),
+            provider_type="openai",
+            tool_manager=RecordingToolManager(),
+            system_prompt="",
+        )
+
+        agent._execute_tool("read_file", {"file_path": "calc.py"}, "C:/somewhere/else")
+
+        self.assertEqual(received["file_path"], "calc.py")
+
     def test_cancel_closes_provider_request_and_suppresses_socket_error(self):
         class CancelledProvider(FakeProvider):
             def __init__(self):

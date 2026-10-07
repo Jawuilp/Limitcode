@@ -665,7 +665,7 @@ class LimitcodeCancelRequestCommand(sublime_plugin.WindowCommand):
             chat._active_run_token = None
             sublime.status_message("Limitcode: Cancelling request...")
             chat.hide_loading()
-            chat.append_text("\n\n[Cancelling...]")
+            chat.append_text("\n\n[Cancelled]")
             chat.prepare_for_user()
             chat.on_stream_complete()
             chat._current_agent = None

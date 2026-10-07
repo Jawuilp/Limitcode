@@ -229,9 +229,12 @@ class Agent:
                     "error": f"Missing required arguments for {tool_name}: {', '.join(missing_args)}"
                 }
 
-            # Resolve file paths in arguments
-            path_args = ["file_path", "directory", "cwd"]
-            
+            # Resolve file paths in arguments. file_path is left alone: the
+            # file tools resolve it against the open tabs themselves, and
+            # joining it onto the working directory first breaks relative
+            # paths when that directory is not the file's folder (issue #17).
+            path_args = ["directory", "cwd"]
+
             for arg_name in path_args:
                 if arg_name in resolved_args and resolved_args[arg_name]:
                     resolved_args[arg_name] = self._resolve_path(resolved_args[arg_name], directory)
@@ -795,7 +798,7 @@ class Agent:
                                 f"> {line}" if line else ">"
                                 for line in reasoning_chunk.splitlines()
                             )
-                            prefix = "\n\n---\n\n> **Razonamiento**\n" if not reasoning_header_shown else "\n"
+                            prefix = "\n\n---\n\n> **Reasoning**\n" if not reasoning_header_shown else "\n"
                             self.on_text_chunk(f"{prefix}{quoted}\n")
                             reasoning_header_shown = True
                             displayed_reasoning_chars += len(reasoning_chunk)
@@ -846,6 +849,9 @@ class Agent:
                                 "The model returned an empty response after multiple retries. "
                                 "Please try again or switch to a different model."
                             )
+                        # Nothing was streamed, so show the fallback message (issue #19).
+                        if self.on_text_chunk:
+                            self.on_text_chunk(all_content)
 
                     log_info("[AGENT] No tool calls, loop complete", {
                         "content_len": len(all_content),

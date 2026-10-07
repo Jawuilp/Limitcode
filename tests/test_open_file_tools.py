@@ -8,13 +8,18 @@ install_sublime_stub()
 load_limitcode_package()
 
 class MockView:
-    def __init__(self, file_name, content="", is_chat=False):
+    def __init__(self, file_name, content="", is_chat=False, dirty=False):
         self._file_name = file_name
         self._content = content
         self._settings = {"limitcode_chat_view": is_chat}
+        self._dirty = dirty
+        self.saved = False
 
     def file_name(self):
         return self._file_name
+
+    def is_dirty(self):
+        return self._dirty
 
     def size(self):
         return len(self._content)
@@ -40,6 +45,8 @@ class MockView:
     def run_command(self, command_name, args=None):
         if command_name == "limitcode_write_buffer":
             self._content = args.get("content", "")
+        elif command_name == "save":
+            self.saved = True
 
 
 class MockWindow:
@@ -215,6 +222,86 @@ class ViewBasedToolsTest(unittest.TestCase):
         result = tool.execute("index.html", old_str="world", new_str="sublime")
         self.assertTrue(result.get("success"))
         self.assertEqual(view._content, "hello sublime")
+
+    def test_write_converts_crlf_to_lf_for_the_buffer(self):
+        import sublime
+        from Limitcode.tools.write import WriteToFileTool
+
+        view = MockView("c:/project/index.txt", content="original")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = WriteToFileTool().execute("index.txt", "a\r\nb\r\n")
+
+        self.assertTrue(result.get("success"))
+        self.assertEqual(view._content, "a\nb\n")
+
+    def test_write_and_edit_do_not_save_unsaved_user_changes(self):
+        import sublime
+        from Limitcode.tools.edit import EditFileTool
+        from Limitcode.tools.write import WriteToFileTool
+
+        view = MockView("c:/project/index.txt", content="hello world", dirty=True)
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = EditFileTool().execute("index.txt", old_str="world", new_str="there")
+        self.assertTrue(result.get("success"))
+        self.assertEqual(view._content, "hello there")
+        self.assertFalse(view.saved)
+        self.assertIn("unsaved changes", result["message"])
+
+        result = WriteToFileTool().execute("index.txt", "fresh")
+        self.assertTrue(result.get("success"))
+        self.assertFalse(view.saved)
+        self.assertIn("unsaved changes", result["message"])
+
+    def test_write_and_edit_save_a_clean_buffer(self):
+        import sublime
+        from Limitcode.tools.edit import EditFileTool
+
+        view = MockView("c:/project/index.txt", content="hello world")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = EditFileTool().execute("index.txt", old_str="world", new_str="there")
+
+        self.assertTrue(result.get("success"))
+        self.assertTrue(view.saved)
+
+    def test_edit_refuses_ambiguous_match(self):
+        import sublime
+        from Limitcode.tools.edit import EditFileTool
+
+        view = MockView("c:/project/index.txt", content="x = 1\nx = 1\nx = 1\n")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = EditFileTool().execute("index.txt", old_str="x = 1", new_str="x = 2")
+
+        self.assertFalse(result.get("success"))
+        self.assertIn("3 times", result["error"])
+        self.assertEqual(view._content, "x = 1\nx = 1\nx = 1\n")
+
+    def test_read_file_past_the_end_is_an_error(self):
+        import sublime
+        from Limitcode.tools.read import ReadFileTool
+
+        view = MockView("c:/project/index.txt", content="one\ntwo\nthree\nfour")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = ReadFileTool().execute("index.txt", start_line=99, end_line=4)
+
+        self.assertFalse(result.get("success"))
+        self.assertIn("Invalid range", result["error"])
+
+    def test_read_empty_file_still_succeeds(self):
+        import sublime
+        from Limitcode.tools.read import ReadFileTool
+
+        view = MockView("c:/project/empty.txt", content="")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = ReadFileTool().execute("empty.txt")
+
+        self.assertTrue(result.get("success"))
+        self.assertEqual(result["content"], "")
 
     def test_write_preserves_unicode_escapes_without_gate(self):
         import sublime

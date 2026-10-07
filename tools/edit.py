@@ -45,6 +45,10 @@ class EditFileTool(Tool):
                 if escape_gate is not None:
                     escape_gate.mark_corruption_proven()
 
+            # Saving would also write out text the user typed but has not saved
+            # (issue #15), so only save a buffer that was clean before the edit.
+            was_dirty = view.is_dirty()
+
             import threading
             completed = threading.Event()
             error_holder = []
@@ -52,7 +56,8 @@ class EditFileTool(Tool):
             def update_buffer():
                 try:
                     view.run_command("limitcode_write_buffer", {"content": new_content})
-                    view.run_command("save")
+                    if not was_dirty:
+                        view.run_command("save")
                 except Exception as e:
                     error_holder.append(str(e))
                 finally:
@@ -64,7 +69,12 @@ class EditFileTool(Tool):
                 return {"success": False, "error": error_holder[0]}
 
             message = f"Successfully edited {file_path} using '{strategy}' matching strategy."
-            
+            if was_dirty:
+                message += (
+                    " The file had unsaved changes, so it was not saved; "
+                    "save it in Sublime Text to keep the edit on disk."
+                )
+
             # Try to collect LSP diagnostics to notify agent of syntax/compilation errors
             try:
                 from ..lsp import LSPDiagnosticsCollector

@@ -472,9 +472,13 @@ class OpenAICompatibleProvider(BaseProvider):
         raw_preview = []
         logged_json_decode = False
         logged_non_sse = False
+        saw_chunk = False
+        stream_finished = False
+        cancelled = False
         try:
             for line in response:
                 if on_cancel and on_cancel():
+                    cancelled = True
                     break
 
                 if not line:
@@ -508,10 +512,12 @@ class OpenAICompatibleProvider(BaseProvider):
 
                 data_str = line[6:].strip()
                 if data_str == "[DONE]":
+                    stream_finished = True
                     break
-                
+
                 try:
                     data = json.loads(data_str)
+                    saw_chunk = True
                 except json.JSONDecodeError:
                     # If this chunk itself is HTML, transport likely got hijacked.
                     if self._looks_like_html_document(data_str):
@@ -613,6 +619,7 @@ class OpenAICompatibleProvider(BaseProvider):
                 # Check finish reason
                 if "finish_reason" in choice and choice["finish_reason"]:
                     result.finish_reason = choice["finish_reason"]
+                    stream_finished = True
         except TimeoutError:
             log_error(f"[{self._provider_name.upper()}] Stream timeout", {
                 "stream_preview": "\n".join(raw_preview)
@@ -633,7 +640,15 @@ class OpenAICompatibleProvider(BaseProvider):
             raise
         finally:
             response.close()
-        
+
+        # The connection ended after some data but without [DONE] or a finish
+        # reason: the answer is cut off, so say so instead of showing it as
+        # complete (issue #18).
+        if saw_chunk and not stream_finished and not cancelled:
+            raise ConnectionError(
+                f"{self._provider_name} closed the connection before the response was finished."
+            )
+
         # Parse accumulated tool calls
         for idx in sorted(tool_calls_data.keys()):
             tc_data = tool_calls_data[idx]
