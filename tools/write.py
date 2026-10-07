@@ -29,6 +29,11 @@ class WriteToFileTool(Tool):
             if escape_gate is not None:
                 content = escape_gate.prepare_write_content(content)
 
+            # The buffer keeps "\n" internally and Sublime writes the file's own
+            # line endings on save; a "\r\n" here would be saved as "\r\r\n"
+            # (issue #13).
+            content = content.replace("\r\n", "\n")
+
             import threading
             completed = threading.Event()
             error_holder = []

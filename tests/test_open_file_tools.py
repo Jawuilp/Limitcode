@@ -216,6 +216,42 @@ class ViewBasedToolsTest(unittest.TestCase):
         self.assertTrue(result.get("success"))
         self.assertEqual(view._content, "hello sublime")
 
+    def test_write_converts_crlf_to_lf_for_the_buffer(self):
+        import sublime
+        from Limitcode.tools.write import WriteToFileTool
+
+        view = MockView("c:/project/index.txt", content="original")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = WriteToFileTool().execute("index.txt", "a\r\nb\r\n")
+
+        self.assertTrue(result.get("success"))
+        self.assertEqual(view._content, "a\nb\n")
+
+    def test_read_file_past_the_end_is_an_error(self):
+        import sublime
+        from Limitcode.tools.read import ReadFileTool
+
+        view = MockView("c:/project/index.txt", content="one\ntwo\nthree\nfour")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = ReadFileTool().execute("index.txt", start_line=99, end_line=4)
+
+        self.assertFalse(result.get("success"))
+        self.assertIn("Invalid range", result["error"])
+
+    def test_read_empty_file_still_succeeds(self):
+        import sublime
+        from Limitcode.tools.read import ReadFileTool
+
+        view = MockView("c:/project/empty.txt", content="")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = ReadFileTool().execute("empty.txt")
+
+        self.assertTrue(result.get("success"))
+        self.assertEqual(result["content"], "")
+
     def test_write_preserves_unicode_escapes_without_gate(self):
         import sublime
         from Limitcode.tools.write import WriteToFileTool
