@@ -1,0 +1,10 @@
+Limitcode 1.1.10 - Buffer-first edits (#15, #23)
+
+edit_file and write_to_file now apply changes to the editor buffer
+without saving to disk (#15, #23). Review what the agent changed with
+Sublime's Incremental Diff in the gutter, then save when you are ready.
+Your own unsaved work in the same file is never written behind your
+back anymore.
+
+Prefer the old persist-after-edit behavior? Set "auto_save_edits":
+true in Limitcode.sublime-settings.
