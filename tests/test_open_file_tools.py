@@ -12,6 +12,7 @@ class MockView:
         self._file_name = file_name
         self._content = content
         self._settings = {"limitcode_chat_view": is_chat}
+        self.commands_run = []
 
     def file_name(self):
         return self._file_name
@@ -38,6 +39,7 @@ class MockView:
         return SettingsObj(self._settings)
 
     def run_command(self, command_name, args=None):
+        self.commands_run.append(command_name)
         if command_name == "limitcode_write_buffer":
             self._content = args.get("content", "")
 
@@ -185,6 +187,62 @@ class ViewBasedToolsTest(unittest.TestCase):
         result = tool.execute("index.html", "new content")
         self.assertTrue(result.get("success"))
         self.assertEqual(view._content, "new content")
+
+    def test_write_file_tool_does_not_save_to_disk(self):
+        # Issues #15/#23: tools must never auto-save; the user persists.
+        import sublime
+        from Limitcode.tools.write import WriteToFileTool
+
+        view = MockView("c:/project/index.html", content="original")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = WriteToFileTool().execute("index.html", "new content")
+
+        self.assertTrue(result.get("success"))
+        self.assertNotIn("save", view.commands_run)
+        self.assertIn("not saved to disk", result.get("message", ""))
+
+    def test_edit_file_tool_does_not_save_to_disk(self):
+        # Issues #15/#23: an agent edit must not persist the user's
+        # unsaved typing in the same buffer.
+        import sublime
+        from Limitcode.tools.edit import EditFileTool
+
+        view = MockView("c:/project/index.html", content="hello world")
+        sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+        result = EditFileTool().execute("index.html", old_str="world", new_str="sublime")
+
+        self.assertTrue(result.get("success"))
+        self.assertEqual(view._content, "hello sublime")
+        self.assertNotIn("save", view.commands_run)
+        self.assertIn("not saved to disk", result.get("message", ""))
+
+    def test_auto_save_edits_true_persists_to_disk(self):
+        import sublime
+        from Limitcode.tools.edit import EditFileTool
+        from Limitcode.tools.write import WriteToFileTool
+
+        store = sublime._settings_store
+        store["auto_save_edits"] = True
+        try:
+            view = MockView("c:/project/index.html", content="hello world")
+            sublime._active_window = MockWindow(folders=["c:/project"], views=[view])
+
+            result = EditFileTool().execute("index.html", old_str="world", new_str="sublime")
+            self.assertTrue(result.get("success"))
+            self.assertIn("save", view.commands_run)
+            self.assertIn("saved", result.get("message", ""))
+
+            view2 = MockView("c:/project/other.html", content="original")
+            sublime._active_window = MockWindow(folders=["c:/project"], views=[view2])
+
+            result2 = WriteToFileTool().execute("other.html", "new content")
+            self.assertTrue(result2.get("success"))
+            self.assertIn("save", view2.commands_run)
+            self.assertIn("saved", result2.get("message", ""))
+        finally:
+            store.pop("auto_save_edits", None)
 
     def test_ambiguous_write_does_not_modify_any_buffer(self):
         import sublime

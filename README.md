@@ -4,7 +4,8 @@
 
 It works the way a pair programmer works: the agent only sees and touches the
 files you have open in your editor. You steer the session, you choose what it
-reads, and every edit lands in a file you can review immediately.
+reads, and every edit lands in the buffer you can review immediately — saved
+to disk only when you save.
 
 No hidden filesystem scans. No shell access. No autopilot.
 
@@ -33,6 +34,7 @@ project, runs commands, and manages its own context, see
 - Configurable reasoning effort and visible thinking
 - Prompt history and @-file references
 - A deliberately small, reviewable tool surface
+- Agent edits land in the buffer for review; you save when ready (`auto_save_edits` to opt into auto-save)
 
 ## LSP integration (optional)
 
@@ -181,7 +183,8 @@ own shortcuts, use `Limitcode: Open Key Bindings` and add bindings such as:
     "max_iterations": 50,
     "chat_font_size": "auto",
     "reasoning_effort": "off",
-    "show_thoughts": false
+    "show_thoughts": false,
+    "auto_save_edits": false
 }
 ```
 
@@ -189,6 +192,12 @@ own shortcuts, use `Limitcode: Open Key Bindings` and add bindings such as:
 integer or `"auto"`. Reasoning effort can be `off`, `low`, `medium` or `high`;
 unsupported models ignore it. `chat_font_size` accepts `"auto"` or a positive
 number and applies only to the Limitcode chat view.
+
+`auto_save_edits` controls what happens after the agent edits a file. The
+default, `false`, applies the change to the editor buffer only — the file on
+disk is untouched until you save, and Sublime's Incremental Diff (`mini_diff`)
+shows what changed in the gutter. Set it to `true` to save automatically after
+every agent edit.
 
 ## Chat style customization
 

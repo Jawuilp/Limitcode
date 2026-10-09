@@ -40,8 +40,13 @@ class WriteToFileTool(Tool):
 
             def update_buffer():
                 try:
+                    # Buffer only by default (issues #15/#23): Sublime's
+                    # Incremental Diff shows the change against disk; the user
+                    # saves when they decide to. auto_save_edits restores the
+                    # old persist-after-edit behavior.
                     view.run_command("limitcode_write_buffer", {"content": content})
-                    view.run_command("save")
+                    if sublime.load_settings("Limitcode.sublime-settings").get("auto_save_edits", False):
+                        view.run_command("save")
                 except Exception as e:
                     error_holder.append(str(e))
                 finally:
@@ -52,7 +57,13 @@ class WriteToFileTool(Tool):
             if error_holder:
                 return {"success": False, "error": error_holder[0]}
                 
-            message = f"Successfully wrote to {file_path}"
+            if sublime.load_settings("Limitcode.sublime-settings").get("auto_save_edits", False):
+                message = f"Successfully wrote and saved {file_path}"
+            else:
+                message = (
+                    f"Successfully wrote to {file_path}. "
+                    "Applied to the editor buffer only; not saved to disk yet."
+                )
             
             # Try to collect LSP diagnostics to notify agent of syntax/compilation errors
             try:

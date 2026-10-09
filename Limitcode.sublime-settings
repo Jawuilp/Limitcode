@@ -29,6 +29,11 @@
     },
     "show_thoughts": false,
     "hide_minimap_in_chat": true,
+    // When false (default), edit_file/write_to_file only modify the editor
+    // buffer: the file on disk is untouched until you save, and Sublime's
+    // Incremental Diff shows what the agent changed (issues #15/#23).
+    // When true, tools save the file automatically after every change.
+    "auto_save_edits": false,
     // Mirror the plugin console to history/sublime_console.log and trace
     // chat-view commands. Development aid; leave off for normal use.
     "debug_console_log": false
