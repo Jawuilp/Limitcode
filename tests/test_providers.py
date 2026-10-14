@@ -26,6 +26,7 @@ class ProviderConfigTest(unittest.TestCase):
         sublime._settings_store.clear()
         ProviderRegistry._providers.clear()
         ProviderRegistry.initialize()
+        OpenAICompatibleProvider._MODEL_CAPABILITIES.clear()
 
     def _capture_tool_payload(self, provider, temperature):
         captured_payloads = []
@@ -229,6 +230,145 @@ class ProviderConfigTest(unittest.TestCase):
         self.assertEqual(provider._list_models_fallback(), ["openrouter-live-model"])
         self.assertEqual(calls[0][2:], ("GET", "/api/v1/models"))
         self.assertEqual(calls[0][0], "openrouter.ai")
+
+    def test_http_errors_keep_provider_details_for_display(self):
+        provider = ProviderRegistry.create(
+            "openrouter",
+            api_key="test",
+            model="test-model",
+            extra_config={"provider_name": "openrouter"},
+        )
+
+        class Response:
+            status = 400
+
+            def read(self):
+                return b'{"error":"full provider detail"}'
+
+            def close(self):
+                pass
+
+            def getheader(self, name, default=None):
+                return "application/json"
+
+        with self.assertRaisesRegex(Exception, "full provider detail"):
+            provider._raise_for_http_error(Response(), lambda *_args, **_kwargs: None)
+
+    def test_model_metadata_controls_native_tool_support(self):
+        provider = ProviderRegistry.create(
+            "openrouter",
+            api_key="test",
+            model="qwen/qwen2.5-coder-32b-instruct",
+            extra_config={"provider_name": "openrouter"},
+        )
+        OpenAICompatibleProvider._MODEL_CAPABILITIES[
+            ("openrouter", "qwen/qwen2.5-coder-32b-instruct")
+        ] = {"temperature", "response_format"}
+
+        self.assertFalse(provider.supports_tools())
+        self.assertEqual(provider.get_tool_calling_mode(), "text")
+
+        OpenAICompatibleProvider._MODEL_CAPABILITIES[
+            ("openrouter", "qwen/qwen2.5-coder-32b-instruct")
+        ] = {"temperature", "tools"}
+        self.assertTrue(provider.supports_tools())
+        self.assertEqual(provider.get_tool_calling_mode(), "native")
+
+    def test_local_openai_compatible_model_metadata_controls_tool_support(self):
+        for provider_name in ("ollama", "lm-studio"):
+            provider = ProviderRegistry.create(
+                provider_name,
+                api_key="",
+                model="local-model",
+                extra_config={"provider_name": provider_name},
+            )
+            OpenAICompatibleProvider._MODEL_CAPABILITIES[
+                (provider_name, "local-model")
+            ] = {"temperature"}
+            self.assertFalse(provider.supports_tools(), provider_name)
+            self.assertEqual(provider.get_tool_calling_mode(), "text", provider_name)
+
+            OpenAICompatibleProvider._MODEL_CAPABILITIES[
+                (provider_name, "local-model")
+            ] = {"temperature", "tools"}
+            self.assertTrue(provider.supports_tools(), provider_name)
+            self.assertEqual(provider.get_tool_calling_mode(), "native", provider_name)
+
+    def test_text_messages_retain_string_content_for_openrouter(self):
+        provider = ProviderRegistry.create(
+            "openrouter",
+            api_key="test",
+            model="qwen/qwen2.5-coder-32b-instruct",
+            extra_config={"provider_name": "openrouter"},
+        )
+        formatted = provider._format_messages([
+            {"role": "system", "content": "system"},
+            {"role": "user", "content": "hello"},
+        ])
+
+        self.assertEqual(formatted[0]["content"], "system")
+        self.assertEqual(formatted[1]["content"], "hello")
+
+    def test_text_only_parts_are_flattened_to_string(self):
+        provider = ProviderRegistry.create(
+            "openrouter",
+            api_key="test",
+            model="openai/gpt-4o",
+            extra_config={"provider_name": "openrouter"},
+        )
+        formatted = provider._format_messages([
+            {"role": "system", "content": "system"},
+            {"role": "user", "content": [{"type": "text", "text": "hello"}]},
+        ])
+
+        self.assertEqual(formatted[0]["content"], "system")
+        self.assertEqual(formatted[1]["content"], "hello")
+
+    def test_openrouter_transport_preserves_normalized_messages(self):
+        provider = ProviderRegistry.create(
+            "openrouter",
+            api_key="test",
+            model="openai/gpt-4o",
+            extra_config={"provider_name": "openrouter"},
+        )
+        normalized = provider._normalize_openrouter_messages([
+            {"role": "system", "content": "system"},
+            {"role": "user", "content": "hello"},
+        ])
+        self.assertEqual(normalized[0]["content"], "system")
+        self.assertEqual(normalized[1]["content"], "hello")
+
+    def test_openrouter_loads_capabilities_for_selected_model_when_not_cached(self):
+        provider = ProviderRegistry.create(
+            "openrouter",
+            api_key="test",
+            model="qwen/qwen2.5-coder-32b-instruct",
+            extra_config={"provider_name": "openrouter"},
+        )
+        calls = []
+
+        class Response:
+            status = 200
+
+            def read(self):
+                return json.dumps({
+                    "data": [{
+                        "id": "qwen/qwen2.5-coder-32b-instruct",
+                        "supported_parameters": ["temperature", "response_format"],
+                    }]
+                }).encode()
+
+            def close(self):
+                pass
+
+        def request(host, port, method, path, headers, body=None, **kwargs):
+            calls.append((method, path))
+            return Response()
+
+        provider._make_https_request = request
+
+        self.assertFalse(provider.supports_tools())
+        self.assertEqual(calls[0][1], "/api/v1/models")
 
     def test_moonshot_models_use_their_live_endpoint(self):
         provider = ProviderRegistry.create(

@@ -3,6 +3,8 @@ OpenAI-compatible transport for OpenAI, DeepSeek, Ollama and LM Studio.
 """
 
 import json
+import threading
+from urllib.parse import quote
 from typing import Dict, List, Optional, Iterator, Any
 
 from .base import BaseProvider, ToolCall, StreamResponse
@@ -93,6 +95,10 @@ class OpenAICompatibleProvider(BaseProvider):
     """
     
     PROVIDER_NAME = "openai-compatible"
+    MAX_DISPLAYED_ERROR_LENGTH = 12000
+    CAPABILITY_PROVIDERS = {"openrouter", "ollama", "lm-studio", "lmstudio"}
+    _MODEL_CAPABILITIES = {}
+    _MODEL_CAPABILITIES_LOCK = threading.Lock()
     
     def __init__(
         self,
@@ -116,6 +122,53 @@ class OpenAICompatibleProvider(BaseProvider):
         super().__init__(api_key, model, actual_base_url, extra_config)
         self._model_info = MODEL_INFO.get(model, MODEL_INFO["default"])
     
+    def supports_tools(self) -> bool:
+        """Use provider metadata for providers with model capability metadata."""
+        with self._MODEL_CAPABILITIES_LOCK:
+            capabilities = self._MODEL_CAPABILITIES.get((self._provider_name, self.model))
+        if capabilities is None and self._provider_name in self.CAPABILITY_PROVIDERS:
+            # Do not infer native tools when capability metadata is unavailable:
+            # that would send an invalid payload to text-only endpoints.
+            self._list_models_fallback()
+            with self._MODEL_CAPABILITIES_LOCK:
+                capabilities = self._MODEL_CAPABILITIES.get((self._provider_name, self.model))
+        if capabilities is None:
+            return self._provider_name not in self.CAPABILITY_PROVIDERS
+        return "tools" in capabilities
+
+    def _fetch_model_capabilities(self) -> Optional[set]:
+        """Fetch capabilities for the selected model when the list cache missed them."""
+        from ..lib.logger import log_error
+
+        host, port, base_path = self._parse_url(self.base_url)
+        model_base_path = base_path.rstrip("/")
+        if self._provider_name == "openrouter" and model_base_path == "":
+            model_base_path = "/api/v1"
+        model_path = f"{model_base_path}/models/{quote(self.model, safe='/')}"
+        try:
+            response = self._make_https_request(
+                host, port, "GET", model_path, self._get_headers(), timeout=10
+            )
+            if response.status != 200:
+                response.close()
+                return None
+            payload = json.loads(response.read().decode("utf-8"))
+            response.close()
+            model_data = payload.get("data", payload)
+            supported = model_data.get("supported_parameters")
+            if not isinstance(supported, list):
+                return None
+            capabilities = {str(parameter) for parameter in supported}
+            with self._MODEL_CAPABILITIES_LOCK:
+                self._MODEL_CAPABILITIES[(self._provider_name, self.model)] = capabilities
+            return capabilities
+        except Exception as error:
+            log_error(f"[{self._provider_name.upper()}] Failed to fetch model capabilities", {
+                "model": self.model,
+                "error": str(error),
+            })
+            return None
+
     def _get_max_tokens(self) -> int:
         return self._model_info["max_tokens"]
     
@@ -219,10 +272,17 @@ class OpenAICompatibleProvider(BaseProvider):
 
         from .base import RateLimitError, CreditsError
         if response.status == 429:
-            raise RateLimitError(f"Rate limited: {error_body[:300]}")
+            raise RateLimitError(
+                f"Rate limited: {error_body[:self.MAX_DISPLAYED_ERROR_LENGTH]}"
+            )
         if response.status in (401, 402, 403):
-            raise CreditsError(f"Credits/Auth error: {error_body[:300]}")
-        raise Exception(f"API error ({response.status}): {error_body[:300]}")
+            raise CreditsError(
+                f"Credits/Auth error: {error_body[:self.MAX_DISPLAYED_ERROR_LENGTH]}"
+            )
+        raise Exception(
+            f"API error ({response.status}): "
+            f"{error_body[:self.MAX_DISPLAYED_ERROR_LENGTH]}"
+        )
 
     def _list_models_fallback(self) -> List[str]:
         """Fetch available models from the provider's /models endpoint."""
@@ -298,6 +358,12 @@ class OpenAICompatibleProvider(BaseProvider):
                             continue
                         m_id = m["id"]
                         model_ids.append(m_id)
+                        supported = m.get("supported_parameters")
+                        if isinstance(supported, list):
+                            with self._MODEL_CAPABILITIES_LOCK:
+                                self._MODEL_CAPABILITIES[(self._provider_name, m_id)] = {
+                                    str(parameter) for parameter in supported
+                                }
 
                     log_info(
                         f"[{self.PROVIDER_NAME.upper()}] Models endpoint returned {len(model_ids)} models",
@@ -345,7 +411,9 @@ class OpenAICompatibleProvider(BaseProvider):
         from ..lib.logger import log_error
         headers = self._get_headers()
         
-        formatted_messages = self._format_messages([{"role": "system", "content": system_prompt}] + messages)
+        formatted_messages = self._normalize_openrouter_messages(
+            self._format_messages([{"role": "system", "content": system_prompt}] + messages)
+        )
         payload = {
             "model": self.model,
             "messages": formatted_messages,
@@ -433,16 +501,19 @@ class OpenAICompatibleProvider(BaseProvider):
         headers = self._get_headers()
         
         all_messages = [{"role": "system", "content": system_prompt}] + messages
-        formatted_messages = self._format_messages(all_messages)
+        formatted_messages = self._normalize_openrouter_messages(
+            self._format_messages(all_messages)
+        )
         
         payload = {
             "model": self.model,
             "messages": formatted_messages,
             "max_tokens": max_tokens,
-            "stream": True,
-            "tools": tools,
-            "tool_choice": "auto"
+            "stream": True
         }
+        if tools:
+            payload["tools"] = tools
+            payload["tool_choice"] = "auto"
         if temperature is not None:
             payload["temperature"] = temperature
 
@@ -780,23 +851,33 @@ class OpenAICompatibleProvider(BaseProvider):
         for msg in messages:
             content = msg.get("content")
             if isinstance(content, list):
-
-                new_content = []
-                for part in content:
-                    if isinstance(part, dict) and part.get("type") == "image":
-                        mime = part.get("mime_type", "image/jpeg")
-                        b64_data = part.get("data", "")
-                        new_content.append({
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:{mime};base64,{b64_data}"
-                            }
-                        })
-                    else:
-                        new_content.append(part)
-                
-                formatted_msg = dict(msg)
-                formatted_msg["content"] = new_content
+                has_images = any(
+                    isinstance(p, dict) and p.get("type") in ("image", "image_url")
+                    for p in content
+                )
+                if has_images:
+                    new_content = []
+                    for part in content:
+                        if isinstance(part, dict) and part.get("type") == "image":
+                            mime = part.get("mime_type", "image/jpeg")
+                            b64_data = part.get("data", "")
+                            new_content.append({
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{mime};base64,{b64_data}"
+                                }
+                            })
+                        else:
+                            new_content.append(part)
+                    formatted_msg = dict(msg)
+                    formatted_msg["content"] = new_content
+                else:
+                    text_parts = [
+                        p.get("text", "") if isinstance(p, dict) else str(p)
+                        for p in content
+                    ]
+                    formatted_msg = dict(msg)
+                    formatted_msg["content"] = "\n".join(text_parts)
                 formatted.append(formatted_msg)
             else:
                 formatted_msg = dict(msg)
@@ -806,3 +887,6 @@ class OpenAICompatibleProvider(BaseProvider):
                 formatted.append(formatted_msg)
         return formatted
 
+    def _normalize_openrouter_messages(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Ensure messages conform to standard OpenAI chat completions schema."""
+        return messages

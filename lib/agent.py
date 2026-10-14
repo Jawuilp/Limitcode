@@ -105,6 +105,19 @@ class Agent:
             return [self._json_safe(v) for v in value]
         return str(value)
 
+    @staticmethod
+    def _decode_text_tool_value(value: Any) -> Any:
+        """Decode transport escapes used by the XML text-tool protocol."""
+        if not isinstance(value, str) or "\\" not in value:
+            return value
+        return (
+            value
+            .replace("\\r\\n", "\n")
+            .replace("\\n", "\n")
+            .replace("\\r", "\r")
+            .replace("\\t", "\t")
+        )
+
     def _status(self, message: str):
         """Update status bar."""
         if self.on_status:
@@ -126,8 +139,23 @@ class Agent:
         from .agent_types import ToolCall
         
         tool_calls = []
-        # Find all <tool_call>...</tool_call> blocks
         blocks = re.findall(r'<tool_call>(.*?)</tool_call>', text, re.DOTALL)
+        if not blocks:
+            blocks = re.findall(r'(<function=\w+>.*?</function>)', text, re.DOTALL)
+        if not blocks:
+            # Some text-only models omit the opening ``<function=...>`` tag
+            # when emitting edit calls, but keep the function name and closing
+            # tag. Accept that bounded form as well.
+            malformed = re.findall(
+                r'(?:^|\n)\s*(read_file|write_to_file|edit_file)\s*\n'
+                r'(<parameter=\w+>.*?</function>)',
+                text,
+                re.DOTALL | re.IGNORECASE,
+            )
+            blocks = [
+                f"<function={name}>{parameters}"
+                for name, parameters in malformed
+            ]
         
         for i, block in enumerate(blocks):
             # Extract function name: <function=NAME>
@@ -207,6 +235,26 @@ class Agent:
 
             if not isinstance(resolved_args, dict):
                 resolved_args = {}
+
+            # Accept the names used by earlier text-protocol prompts while
+            # keeping the tool implementation's canonical argument names.
+            if tool_name == "edit_file":
+                if "old_str" not in resolved_args and "target" in resolved_args:
+                    resolved_args["old_str"] = resolved_args.pop("target")
+                if "new_str" not in resolved_args and "replacement" in resolved_args:
+                    resolved_args["new_str"] = resolved_args.pop("replacement")
+
+            if tool_name == "write_to_file":
+                if "content" in resolved_args:
+                    resolved_args["content"] = self._decode_text_tool_value(
+                        resolved_args["content"]
+                    )
+            elif tool_name == "edit_file":
+                for argument_name in ("old_str", "new_str"):
+                    if argument_name in resolved_args:
+                        resolved_args[argument_name] = self._decode_text_tool_value(
+                            resolved_args[argument_name]
+                        )
 
             # Copy before injecting session state (issue #10): providers that
             # pass tool arguments as a dict (Gemini, Anthropic) share the same
@@ -513,8 +561,32 @@ class Agent:
             system_prompt = f"You are an expert coding assistant. Working directory: {actual_dir}. OS: {os_name}, Shell: {shell_name}"
 
 
-        # Get tool schemas for this provider
+        # Select native API tools or the text protocol based on provider metadata.
         tool_schemas = get_tools_for_provider(self.provider_type)
+        get_tool_mode = getattr(self.provider, "get_tool_calling_mode", None)
+        tool_mode = get_tool_mode() if get_tool_mode else "native"
+        if tool_mode == "text":
+            system_prompt += (
+                "\n\n## Text Tool Protocol (CRITICAL)\n"
+                "Native tool calling is disabled for this model. You MUST execute tools autonomously using XML tags.\n"
+                "- YOU are the assistant and you must invoke tools directly. NEVER tell, instruct, or ask the user to execute tools or emit XML.\n"
+                "- NEVER put the XML block inside markdown code fences (like ```xml or ```).\n"
+                "- Whenever you need to read or modify a file, output the XML block immediately and STOP generating text after </tool_call>.\n"
+                "\nExact required format:\n"
+                "<tool_call>\n"
+                "<function=NAME>\n"
+                "<parameter=PARAM_NAME>PARAM_VALUE</parameter>\n"
+                "</function>\n"
+                "</tool_call>\n"
+                "\nAvailable functions:\n"
+                "- read_file: parameters: file_path\n"
+                "- write_to_file: parameters: file_path, content\n"
+                "- edit_file: parameters: file_path, old_str, new_str\n"
+                "\nExample:\n"
+                "User: Revisa el archivo test.py\n"
+                "Assistant: <tool_call><function=read_file><parameter=file_path>test.py</parameter></function></tool_call>\n"
+                "\nWhen you emit a <tool_call>, the system executes it automatically and returns the result inside <tool_result>...</tool_result>. Once you receive the <tool_result>, continue with your response.\n"
+            )
         if self.disabled_tool_names:
             def schema_name(schema):
                 return schema.get("function", {}).get("name") or schema.get("name")
@@ -664,6 +736,7 @@ class Agent:
         log_info("[AGENT] Starting agentic loop", {
             "provider": self.provider_type,
             "tools_count": len(tool_schemas),
+            "tool_mode": tool_mode,
             "directory": actual_dir
         })
 
@@ -711,6 +784,12 @@ class Agent:
                 # Call provider with tools
                 # In the last iterations (or when recovering from empty finals),
                 # don't pass tools to force a user-facing text response.
+                stream_callback = self.on_text_chunk
+                if tool_mode == "text":
+                    # Text-protocol tool calls must be parsed before being
+                    # rendered; otherwise their XML leaks into the chat.
+                    stream_callback = None
+
                 if iteration >= self.max_iterations - 1 or force_no_tools_next_turn:
                     force_no_tools_next_turn = False
                     response = self.provider.create_message_with_tools(
@@ -719,17 +798,17 @@ class Agent:
                         tools=[],  # No tools — force text response
                         max_tokens=max_tokens,
                         temperature=temperature,
-                        on_text_chunk=self.on_text_chunk,
+                        on_text_chunk=stream_callback,
                         on_cancel=lambda: self.is_cancelled
                     )
                 else:
                     response = self.provider.create_message_with_tools(
                         system_prompt=system_prompt,
                         messages=current_messages,
-                        tools=tool_schemas,
+                        tools=tool_schemas if tool_mode == "native" else [],
                         max_tokens=max_tokens,
                         temperature=temperature,
-                        on_text_chunk=self.on_text_chunk,
+                        on_text_chunk=stream_callback,
                         on_cancel=lambda: self.is_cancelled
                     )
 
@@ -770,13 +849,15 @@ class Agent:
                     if xml_tools:
                         response.tool_calls = xml_tools
                         response.has_tool_calls = True
-                        # Remove the XML from the text shown to the user
                         response.content = re.sub(
-                            r'<tool_call>.*?</tool_call>',
+                            r'```(?:xml)?\s*<tool_call>.*?</tool_call>\s*```|<tool_call>.*?</tool_call>|```(?:xml)?\s*<function=\w+>.*?</function>\s*```|<function=\w+>.*?</function>|(?:^|\n)\s*(?:read_file|write_to_file|edit_file)\s*\n\s*<parameter=\w+>.*?</function>',
                             '', response.content, flags=re.DOTALL
                         ).strip()
                         if not response.content:
                             response.content = ""
+
+                if tool_mode == "text" and response.content and self.on_text_chunk:
+                    self.on_text_chunk(response.content)
 
                 # Accumulate text content
                 if response.content:
@@ -903,7 +984,13 @@ class Agent:
                 # NOTE: reasoning_content is intentionally NOT included here.
                 # Sending the model's internal thoughts back as history causes it
                 # to re-read and loop on its own reasoning (observed in Kimi/DeepSeek).
-                assistant_msg = self._format_assistant_message(response)
+                if tool_mode == "native":
+                    assistant_msg = self._format_assistant_message(response)
+                else:
+                    assistant_msg = {
+                        "role": "assistant",
+                        "content": response.content or "",
+                    }
                 api_messages.append(assistant_msg)
 
                 # Execute each tool call
@@ -972,8 +1059,23 @@ class Agent:
                                     "result": {"success": False, "error": "Execution interrupted"}
                                 })
                         
-                        result_messages = self._format_tool_results(tool_results)
-                        api_messages.extend(result_messages)
+                        if tool_mode == "native":
+                            result_messages = self._format_tool_results(tool_results)
+                            api_messages.extend(result_messages)
+                        else:
+                            result_text = "\n\n".join(
+                                "<tool_result>"
+                                + json.dumps({
+                                    "name": item["tool_name"],
+                                    "result": self._json_safe(item["result"]),
+                                }, ensure_ascii=False)
+                                + "</tool_result>"
+                                for item in tool_results
+                            )
+                            api_messages.append({
+                                "role": "user",
+                                "content": result_text,
+                            })
 
                 # Continue loop — model will see the tool results and respond
 

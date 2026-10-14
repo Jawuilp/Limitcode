@@ -142,6 +142,38 @@ class EmptyResponseRecoveryTest(unittest.TestCase):
         self.assertTrue(agent.is_cancelled)
         self.assertIsNone(result.error)
 
+    def test_direct_function_xml_tool_call_is_parsed_and_executed(self):
+        class ToolExecManager:
+            def __init__(self):
+                self.executed = []
+
+            def execute_tool(self, tool_name, **kwargs):
+                self.executed.append((tool_name, kwargs))
+                return {"success": True, "content": "file contents"}
+
+        manager = ToolExecManager()
+        xml_text = "```xml\n<function=read_file><parameter=file_path>test.py</parameter></function>\n```"
+        provider = FakeProvider([
+            response(content=xml_text),
+            response(content="Here is the file analysis."),
+        ])
+
+        agent = Agent(
+            provider=provider,
+            provider_type="openai",
+            tool_manager=manager,
+            system_prompt="",
+            max_iterations=5,
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            result = agent.run("hola", directory=directory)
+
+        self.assertEqual(len(manager.executed), 1)
+        self.assertEqual(manager.executed[0][0], "read_file")
+        self.assertEqual(manager.executed[0][1]["file_path"], "test.py")
+        self.assertIn("Here is the file analysis.", result.content)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -31,6 +31,7 @@ class AnthropicProvider(BaseProvider):
     
     PROVIDER_NAME = "anthropic"
     DEFAULT_BASE_URL = "api.anthropic.com"
+    MAX_DISPLAYED_ERROR_LENGTH = 12000
 
     def __init__(self, api_key: str, model: str, base_url: str = None, extra_config: Dict = None):
         super().__init__(api_key, model, base_url or self.DEFAULT_BASE_URL, extra_config)
@@ -101,7 +102,7 @@ class AnthropicProvider(BaseProvider):
         finally:
             response.close()
 
-        message = error_body[:300]
+        message = error_body[:self.MAX_DISPLAYED_ERROR_LENGTH]
         try:
             error = json.loads(error_body).get("error", {})
             if error.get("message"):
@@ -319,4 +320,3 @@ class AnthropicProvider(BaseProvider):
                 "content": tr.get("content", "")
             })
         return {"role": "user", "content": content}
-

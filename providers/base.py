@@ -148,6 +148,10 @@ class BaseProvider:
     def supports_tools(self) -> bool:
         """Whether this provider supports tool calling."""
         return True
+
+    def get_tool_calling_mode(self) -> str:
+        """Return the tool protocol supported by this provider/model."""
+        return "native" if self.supports_tools() else "text"
     
     def supports_images(self) -> bool:
         """Whether this provider supports image input."""

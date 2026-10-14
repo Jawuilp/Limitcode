@@ -1,0 +1,5 @@
+Limitcode 1.1.11 - Improved tool-calling compatibility
+
+Improved tool-calling compatibility for models without native tool support, including OpenRouter, Ollama, and LM Studio. Added text-based tool execution, XML parsing, argument normalization, and clearer API errors. Less powerful or older local models may still have problems due to their capability limitations. If a model fails, please open an issue and include the model name and the response it generated.
+
+For a more autonomous coding-agent experience, consider using Limitcode Pro.
