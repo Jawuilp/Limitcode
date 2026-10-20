@@ -2,6 +2,8 @@
 
 **Limitcode is an AI pair programming agent for Sublime Text.**
 
+**[Read the documentation](https://jawuilp.github.io/limitcode-docs/)**
+
 It works the way a pair programmer works: the agent only sees and touches the
 files you have open in your editor. You steer the session, you choose what it
 reads, and every edit lands in the buffer you can review immediately — saved
