@@ -27,6 +27,7 @@ class ProviderRegistry:
         cls.register("deepseek", OpenAICompatibleProvider)
         cls.register("ollama", OpenAICompatibleProvider)
         cls.register("lm-studio", OpenAICompatibleProvider)
+        cls.register("llamafile", OpenAICompatibleProvider)
         cls.register("openrouter", OpenAICompatibleProvider)
         cls.register("moonshot", OpenAICompatibleProvider)
         

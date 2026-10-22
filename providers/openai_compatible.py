@@ -44,6 +44,14 @@ PROVIDER_CONFIGS = {
             "Authorization": f"Bearer {key}" if key else ""
         }
     },
+    "llamafile": {
+        "base_url": "http://127.0.0.1:8080",
+        "path": "/v1/chat/completions",
+        "headers": lambda key: {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {key}" if key else ""
+        }
+    },
     "openrouter": {
         "base_url": "openrouter.ai",
         "path": "/api/v1/chat/completions",
@@ -96,7 +104,7 @@ class OpenAICompatibleProvider(BaseProvider):
     
     PROVIDER_NAME = "openai-compatible"
     MAX_DISPLAYED_ERROR_LENGTH = 12000
-    CAPABILITY_PROVIDERS = {"openrouter", "ollama", "lm-studio", "lmstudio"}
+    CAPABILITY_PROVIDERS = {"openrouter", "ollama", "lm-studio", "lmstudio", "llamafile"}
     _MODEL_CAPABILITIES = {}
     _MODEL_CAPABILITIES_LOCK = threading.Lock()
     
@@ -235,7 +243,14 @@ class OpenAICompatibleProvider(BaseProvider):
         """Build request tuple (host, port, api_path) from base URL + provider path."""
         host, port, path = self._parse_url(self.base_url)
         default_path = self._get_path()
-        api_path = path.rstrip("/") + default_path if path != "/" else default_path
+        if path != "/":
+            clean_path = path.rstrip("/")
+            if clean_path.endswith("/v1") and default_path.startswith("/v1"):
+                api_path = clean_path + default_path[3:]
+            else:
+                api_path = clean_path + default_path
+        else:
+            api_path = default_path
         return host, port, api_path
 
     def _set_stream_timeout(self, response, timeout_seconds: float = 60.0) -> None:
@@ -301,7 +316,11 @@ class OpenAICompatibleProvider(BaseProvider):
         else:
             models_path = "/v1/models"
             
-        api_path = base_path.rstrip("/") + models_path
+        clean_base = base_path.rstrip("/") if base_path != "/" else ""
+        if clean_base.endswith("/v1") and models_path.startswith("/v1"):
+            api_path = clean_base + models_path[3:]
+        else:
+            api_path = clean_base + models_path
 
         log_info(f"[{self.PROVIDER_NAME.upper()}] Fetching models from {host}{api_path}")
         headers = self._get_headers()

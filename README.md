@@ -57,8 +57,9 @@ Limitcode supports:
 - Moonshot AI (Kimi)
 - Ollama
 - LM Studio
+- Llamafile
 
-Ollama and LM Studio run locally without an API key. Cloud providers require a
+Ollama, LM Studio, and Llamafile run locally without an API key. Cloud providers require a
 key configured through `Limitcode: Setup Provider API Key` or the `api_keys`
 object in `Limitcode.sublime-settings`. Model lists are fetched live from each
 provider's `/models` endpoint (with a cached fallback), so new models appear

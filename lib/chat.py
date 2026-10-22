@@ -547,7 +547,8 @@ class ChatView:
         
         friendly_names = {
             "openai": "OpenAI", "anthropic": "Anthropic", "gemini": "Gemini",
-            "deepseek": "DeepSeek", "ollama": "Ollama", "lm-studio": "LM Studio"
+            "deepseek": "DeepSeek", "ollama": "Ollama", "lm-studio": "LM Studio",
+            "llamafile": "Llamafile"
         }
         provider_display = friendly_names.get(provider_id, provider_id)
 

@@ -275,7 +275,7 @@ class ProviderConfigTest(unittest.TestCase):
         self.assertEqual(provider.get_tool_calling_mode(), "native")
 
     def test_local_openai_compatible_model_metadata_controls_tool_support(self):
-        for provider_name in ("ollama", "lm-studio"):
+        for provider_name in ("ollama", "lm-studio", "llamafile"):
             provider = ProviderRegistry.create(
                 provider_name,
                 api_key="",
@@ -776,6 +776,41 @@ class ReasoningEffortTest(unittest.TestCase):
                 "anthropic", api_key="k", model="claude-sonnet-4-6",
                 extra_config={"provider_name": "anthropic"})
             self.assertIsNone(provider.get_reasoning_effort(), repr(value))
+
+
+    def test_llamafile_provider_setup_and_url_normalization(self):
+        # 1. Default configuration without API key
+        sublime._settings_store.clear()
+        sublime._settings_store["default_provider"] = "llamafile"
+        sublime._settings_store["default_model"] = "Mistral-7B-Instruct-v0.3.IQ3_XS.gguf"
+        self.assertTrue(is_provider_configured("llamafile"))
+
+        provider = get_provider("llamafile")
+        self.assertEqual(provider.base_url, "http://127.0.0.1:8080")
+        host, port, api_path = provider._build_api_path()
+        self.assertEqual((host, port, api_path), ("127.0.0.1", 8080, "/v1/chat/completions"))
+
+        # 2. Base URL with /v1 does not duplicate path
+        provider_v1 = ProviderRegistry.create(
+            "llamafile",
+            api_key="",
+            model="Mistral-7B",
+            base_url="http://127.0.0.1:8080/v1",
+            extra_config={"provider_name": "llamafile"}
+        )
+        host, port, api_path = provider_v1._build_api_path()
+        self.assertEqual((host, port, api_path), ("127.0.0.1", 8080, "/v1/chat/completions"))
+
+        # 3. Base URL with /v1 for openai does not duplicate path
+        provider_openai_v1 = ProviderRegistry.create(
+            "openai",
+            api_key="test-key",
+            model="gpt-4o",
+            base_url="http://127.0.0.1:8080/v1",
+            extra_config={"provider_name": "openai"}
+        )
+        host, port, api_path = provider_openai_v1._build_api_path()
+        self.assertEqual((host, port, api_path), ("127.0.0.1", 8080, "/v1/chat/completions"))
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ def get_provider(provider_name: Optional[str] = None, model: Optional[str] = Non
         
     base_url = _get_provider_base_url(settings, provider_name)
 
-    local_providers = ["ollama", "lm-studio"]
+    local_providers = ["ollama", "lm-studio", "llamafile"]
     if not api_key and provider_name not in local_providers:
         raise ValueError(f"No API key configured for {provider_name}. Run 'Limitcode: Setup Provider API Key' or set it in Limitcode.sublime-settings")
 
@@ -54,7 +54,7 @@ def is_provider_configured(provider_name: str, settings=None) -> bool:
     if settings is None:
         settings = sublime.load_settings("Limitcode.sublime-settings")
 
-    local_providers = ["ollama", "lm-studio"]
+    local_providers = ["ollama", "lm-studio", "llamafile"]
     if provider_name in local_providers:
         default_provider = settings.get("default_provider")
         api_keys = settings.get("api_keys", {}) or {}

@@ -79,7 +79,7 @@ class BaseProvider:
     def list_models(self) -> List[str]:
         """Return a list of available models for this provider, trying live endpoint first, then database."""
         provider_id = self.extra_config.get("provider_name", self.PROVIDER_NAME)
-        local_providers = {"ollama", "lm-studio"}
+        local_providers = {"ollama", "lm-studio", "llamafile"}
 
         # 1. Try live fallback first
         try:

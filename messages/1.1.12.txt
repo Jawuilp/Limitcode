@@ -1,0 +1,5 @@
+Limitcode 1.1.12 - Llamafile support and local provider endpoint improvements
+
+Added native support for Llamafile as a local AI provider, running seamlessly without an API key (defaults to http://127.0.0.1:8080). Improved base URL normalization across all OpenAI-compatible endpoints to avoid duplicate /v1 paths.
+
+For a more autonomous coding-agent experience, consider using Limitcode Pro.

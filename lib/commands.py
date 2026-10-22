@@ -429,7 +429,8 @@ class LimitcodeChangeModelCommand(sublime_plugin.WindowCommand):
         "gemini":            "Google Gemini",
         "ollama":            "Ollama (Local)",
         "lm-studio":         "LM Studio (Local)",
-        "openrouter":        "OpenRouter",
+        "llamafile":         "Llamafile (Local)",
+        "openrouter":        "OpenRouter", 
         "moonshot":          "Moonshot AI (Kimi)",
     }
 
@@ -441,6 +442,7 @@ class LimitcodeChangeModelCommand(sublime_plugin.WindowCommand):
         "gemini":            ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-2.0-flash"],
         "ollama":            ["llama3", "mistral", "qwen2.5-coder", "phi3"],
         "lm-studio":         ["meta-llama-3-8b-instruct", "qwen2.5-coder-7b-instruct"],
+        "llamafile":         ["mistral-7b-instruct", "llama-3-8b-instruct", "default"],
         "openrouter":        ["anthropic/claude-sonnet-4-5", "google/gemini-2.5-pro",
                              "openai/gpt-4o", "openai/o3-mini", "deepseek/deepseek-chat",
                              "qwen/qwen3-coder-plus"],
