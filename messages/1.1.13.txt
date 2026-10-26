@@ -1,0 +1,5 @@
+Limitcode 1.1.13 - Smart sticky scroll during streaming responses
+
+Fixed an issue where the chat view forcefully scrolled to the bottom on every token chunk and loading animation frame. Users can now freely scroll up to inspect previous outputs, code changes, and tool execution details while the LLM continues generating in the background.
+
+For a more autonomous coding-agent experience, consider using Limitcode Pro.

@@ -438,6 +438,7 @@ class ChatView:
         self._message_header_phantom_set: Optional[sublime.PhantomSet] = None
         self._input_prompt_phantom_set: Optional[sublime.PhantomSet] = None
         self._status_anchor: Optional[int] = None
+        self._last_auto_scroll_y: Optional[float] = None
         self._tool_counter = 0
         self._last_tool_id_by_name = {}
         self._current_assistant_response = ""
@@ -547,7 +548,7 @@ class ChatView:
         
         friendly_names = {
             "openai": "OpenAI", "anthropic": "Anthropic", "gemini": "Gemini",
-            "deepseek": "DeepSeek", "ollama": "Ollama", "lm-studio": "LM Studio",
+            "deepseek": "DeepSeek", "ollama": "Ollama", "lm-studio": "LM Studio",
             "llamafile": "Llamafile"
         }
         provider_display = friendly_names.get(provider_id, provider_id)
@@ -886,7 +887,7 @@ class ChatView:
         # so _input_start always points to the true end of the buffer
         self._set_input_area()
     
-    def _scroll_to_end(self):
+    def _scroll_to_end(self, force: bool = False):
         """Scroll so the input sits at ~60 % from the top, using the real
         scroll_past_end space for breathing room below."""
         if not self._view or not self._view.is_valid():
@@ -894,13 +895,25 @@ class ChatView:
 
         input_start = int(self._view.settings().get("limitcode_input_start", self._view.size()))
         try:
-            x, _ = self._view.viewport_position()
+            x, current_y = self._view.viewport_position()
             _, input_y = self._view.text_to_layout(input_start)
             _, viewport_h = self._view.viewport_extent()
             target_y = max(0.0, input_y - viewport_h * 0.60)
+
+            if not force:
+                last_y = getattr(self, "_last_auto_scroll_y", None)
+                if (
+                    last_y is not None
+                    and current_y < (last_y - 50)
+                    and current_y < (target_y - 100)
+                ):
+                    return
+
             self._view.set_viewport_position((x, target_y), False)
+            self._last_auto_scroll_y = target_y
         except Exception:
-            self._view.show(input_start, False)
+            if force:
+                self._view.show(input_start, False)
 
     def prepare_for_user(self):
         """Prepare the chat for user input after assistant finish."""
@@ -986,8 +999,8 @@ class ChatView:
             self._input_prompt_phantom_set.update([])
 
         self._set_input_area()
-        self._scroll_to_end()
-        sublime.set_timeout(lambda: self._scroll_to_end(), 50)
+        self._scroll_to_end(force=True)
+        sublime.set_timeout(lambda: self._scroll_to_end(force=True), 50)
 
     def append_text(self, text: str):
         """Append assistant text chunk safely."""
@@ -1190,6 +1203,7 @@ class ChatView:
             
         self._loading_message = message
         self._loading_active = True
+        self._scroll_to_end()
         self._animate_loading(0)
 
     def _animate_loading(self, frame_idx: int):
@@ -1234,7 +1248,6 @@ class ChatView:
                 
         phantom = sublime.Phantom(region, html, sublime.LAYOUT_BLOCK, on_navigate)
         self._loading_phantom_set.update([phantom])
-        self._scroll_to_end()
         
         sublime.set_timeout(lambda: self._animate_loading(frame_idx + 1), 100)
 
@@ -1266,6 +1279,7 @@ class ChatView:
     def clear(self):
         """Clear the chat session."""
         self.session.clear()
+        self._last_auto_scroll_y = None
         if self._view and self._view.is_valid():
             self._view.run_command("select_all")
             self._view.run_command("left_delete")

@@ -248,5 +248,55 @@ class ChatSessionTest(unittest.TestCase):
                         "Orphan Responses API function_call must be stripped: %s" % m)
 
 
+    def test_scroll_to_end_does_not_hijack_when_user_scrolled_up(self):
+        chat = ChatView.__new__(ChatView)
+        chat._last_auto_scroll_y = 1000.0
+
+        class MockView:
+            def __init__(self):
+                self._pos = (0.0, 500.0)  # User scrolled up to 500
+                self.calls = []
+
+            def is_valid(self):
+                return True
+
+            def settings(self):
+                class S:
+                    def get(self, k, d=None):
+                        return 5000
+                return S()
+
+            def size(self):
+                return 5000
+
+            def viewport_position(self):
+                return self._pos
+
+            def text_to_layout(self, pt):
+                return (0.0, 3000.0)
+
+            def viewport_extent(self):
+                return (800.0, 1000.0)
+
+            def set_viewport_position(self, pos, animate):
+                self._pos = pos
+                self.calls.append(pos)
+
+            def show(self, pt, animate):
+                self.calls.append(pt)
+
+        chat._view = MockView()
+
+        # When not forced and user scrolled up: should NOT change viewport
+        chat._scroll_to_end(force=False)
+        self.assertEqual(chat._view.calls, [])
+
+        # When forced (e.g. user submitted new message): should update viewport
+        chat._scroll_to_end(force=True)
+        # target_y = 3000.0 - 1000.0 * 0.60 = 2400.0
+        self.assertEqual(chat._view.calls, [(0.0, 2400.0)])
+        self.assertEqual(chat._last_auto_scroll_y, 2400.0)
+
+
 if __name__ == "__main__":
     unittest.main()
