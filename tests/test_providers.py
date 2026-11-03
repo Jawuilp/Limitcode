@@ -512,6 +512,56 @@ class ProviderConfigTest(unittest.TestCase):
         self.assertEqual(captured_payloads[0]["cache_control"], {"type": "ephemeral"})
         self.assertEqual(captured_payloads[0]["tools"][0]["name"], "test_tool")
 
+    def test_anthropic_preserves_native_tool_schemas(self):
+        from Limitcode.tools.tool_schemas import get_tools_for_provider
+        from Limitcode.providers.anthropic import AnthropicProvider
+        from unittest.mock import Mock
+
+        provider = ProviderRegistry.create(
+            "anthropic",
+            api_key="test-key",
+            model="claude-sonnet-4-6",
+            extra_config={"provider_name": "anthropic"}
+        )
+
+        captured_payloads = []
+
+        def mock_make_https_request(host, port, method, path, headers, body=None):
+            if body:
+                captured_payloads.append(json.loads(body))
+            mock_resp = Mock()
+            mock_resp.status = 200
+            mock_resp.read.return_value = b'{"data": []}'
+            mock_resp.readline.return_value = b''
+            mock_resp.close = lambda: None
+            mock_resp.__iter__ = lambda self: iter([])
+            return mock_resp
+
+        provider._make_https_request = mock_make_https_request
+
+        # Native tools generated for Anthropic provider
+        tools = get_tools_for_provider("anthropic")
+        self.assertTrue(len(tools) >= 3)
+        self.assertNotIn("type", tools[0])
+
+        provider.create_message_with_tools(
+            system_prompt="system test with native tools",
+            messages=[{"role": "user", "content": "hello"}],
+            tools=tools,
+            max_tokens=100,
+            temperature=0.5
+        )
+
+        self.assertEqual(len(captured_payloads), 1)
+        sent_tools = captured_payloads[0].get("tools", [])
+        self.assertEqual(len(sent_tools), len(tools))
+        sent_names = [t["name"] for t in sent_tools]
+        self.assertIn("read_file", sent_names)
+        self.assertIn("write_to_file", sent_names)
+        self.assertIn("edit_file", sent_names)
+        for t in sent_tools:
+            self.assertIn("input_schema", t)
+
     def _make_anthropic_with_error_response(self, status, body):
         from unittest.mock import Mock
 

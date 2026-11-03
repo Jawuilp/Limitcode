@@ -189,6 +189,8 @@ class AnthropicProvider(BaseProvider):
                     "description": fn.get("description", ""),
                     "input_schema": fn.get("parameters", {"type": "object", "properties": {}})
                 })
+            elif isinstance(tool, dict) and "name" in tool and "input_schema" in tool:
+                anthropic_tools.append(tool)
         
         payload = {
             "model": self.model,

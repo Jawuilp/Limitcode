@@ -1,0 +1,5 @@
+Limitcode 1.1.14 - Fix tool calling support for Anthropic Claude models
+
+Fixed an issue where tools were omitted from API requests when using the Anthropic provider. Limitcode now correctly preserves native Anthropic tool schemas, allowing Claude models to execute read_file, edit_file, and write_to_file as expected.
+
+For a more autonomous coding-agent experience, consider using Limitcode Pro.
