@@ -30,6 +30,7 @@ project, runs commands, and manages its own context, see
 
 ## Features
 
+- Inline Assist: edit, generate, and explain code directly inside your active buffer with real-time diff previews
 - Side-by-side streaming chat inside Sublime Text
 - Persistent conversation history per session
 - Model and provider selection with per-session control
@@ -76,6 +77,12 @@ Open every file you want the agent to read or edit before sending a request.
 
 ## Demo
 
+### Inline Assist
+
+![Limitcode Inline Assist](media/inline-assist.gif)
+
+Prompt the model directly on your selected code. Review live diff previews in an inline block phantom, accept changes with `Enter`, reject with `Esc`, or transfer the conversation to the Chat view with a single click.
+
 ![Limitcode building a Pomodoro timer app](media/oss-pomodoro-1.gif)
 
 ![Limitcode pair programming session](media/oss-session-1.gif)
@@ -95,6 +102,7 @@ your machine.
 
 ## Commands
 
+- `Limitcode: Inline Assist`
 - `Limitcode: Open Chat`
 - `Limitcode: New Chat`
 - `Limitcode: Chat History`
@@ -125,6 +133,7 @@ bindings in the user pane. For example:
 
 ```json
 [
+    { "keys": ["ctrl+i"], "command": "limitcode_inline_assist" },
     { "keys": ["ctrl+alt+l"], "command": "limitcode_open_chat" },
     { "keys": ["ctrl+alt+a"], "command": "limitcode_send_to_agent" },
     { "keys": ["ctrl+alt+x"], "command": "limitcode_cancel_request" }
