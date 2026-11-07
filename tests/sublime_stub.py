@@ -26,6 +26,36 @@ class Region:
         self.a = a
         self.b = b
 
+    def empty(self):
+        return self.a == self.b
+
+    def begin(self):
+        return min(self.a, self.b)
+
+    def end(self):
+        return max(self.a, self.b)
+
+    def __eq__(self, other):
+        return isinstance(other, Region) and self.a == other.a and self.b == other.b
+
+
+class Phantom:
+    def __init__(self, region, content, layout, on_navigate=None):
+        self.region = region
+        self.content = content
+        self.layout = layout
+        self.on_navigate = on_navigate
+
+
+class PhantomSet:
+    def __init__(self, view, key=""):
+        self.view = view
+        self.key = key
+        self.phantoms = []
+
+    def update(self, phantoms):
+        self.phantoms = list(phantoms)
+
 
 class Window:
     def __init__(self, folders=None, views=None):
@@ -48,6 +78,20 @@ class Window:
                     return v
         return None
 
+    def focus_view(self, view):
+        self._active_view = view
+        return None
+
+    def show_input_panel(self, caption, initial_text, on_done, on_change, on_cancel):
+        self._last_input_panel = {
+            "caption": caption,
+            "initial_text": initial_text,
+            "on_done": on_done,
+            "on_change": on_change,
+            "on_cancel": on_cancel,
+        }
+        return None
+
 
 def install_sublime_stub(store=None):
     """Install a minimal `sublime` module for unit tests."""
@@ -67,6 +111,11 @@ def install_sublime_stub(store=None):
     module.active_window = lambda: module._active_window
     module.Window = getattr(module, "Window", Window)
     module.Region = getattr(module, "Region", Region)
+    module.Phantom = getattr(module, "Phantom", Phantom)
+    module.PhantomSet = getattr(module, "PhantomSet", PhantomSet)
+    module.LAYOUT_INLINE = 0
+    module.LAYOUT_BELOW = 1
+    module.LAYOUT_BLOCK = 2
     module.View = getattr(module, "View", type("View", (), {}))
     module.CompletionList = getattr(module, "CompletionList", CompletionList)
     module.COMPLETION_FORMAT_TEXT = getattr(module, "COMPLETION_FORMAT_TEXT", 0)

@@ -13,6 +13,11 @@ from .providers.provider_registry import ProviderRegistry
 from .lib.commands import *  # noqa: F401,F403
 from .lib.session_commands import *  # noqa: F401,F403
 from .lib.debug_listener import *  # noqa: F401,F403
+from .lib.inline_assist import (  # noqa: F401
+    LimitcodeInlineAssistCommand,
+    LimitcodeApplyInlineEditCommand,
+    LimitcodeCancelInlineAssistCommand,
+)
 from .lib.chat import (  # noqa: F401
     LimitcodePasteCommand,
     LimitcodeChatInputListener,

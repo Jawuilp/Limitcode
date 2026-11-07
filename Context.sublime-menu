@@ -1,0 +1,6 @@
+[
+    { "caption": "-" },
+    { "caption": "Limitcode: Inline Assist", "command": "limitcode_inline_assist" },
+    { "caption": "Limitcode: Send to Agent", "command": "limitcode_send_to_agent" },
+    { "caption": "-" }
+]

@@ -555,8 +555,8 @@ class ChatView:
 
         # Shorten model name if too long
         display_model = model.split("/")[-1] if "/" in model else model
-        if len(display_model) > 20:
-            display_model = display_model[:17] + "..."
+        if len(display_model) > 42:
+            display_model = display_model[:39] + "..."
             
         display_model_escaped = display_model.replace(" ", "&nbsp;")
         provider_display_escaped = provider_display.replace(" ", "&nbsp;")

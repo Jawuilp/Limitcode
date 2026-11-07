@@ -1,0 +1,12 @@
+Limitcode 1.2.0 — Inline Assist
+
+Generate and edit code directly in your active buffer without switching to the chat panel.
+
+Features:
+* In-buffer generation & editing — Prompt the AI to write or modify code directly inline within your active file.
+* Visual Diff preview — Review added and removed lines before applying them, with one-click Accept and Reject controls.
+* Real-time streaming — Watch responses stream fluidly inline with an adaptive layout fitted to your editor width.
+* Open in Chat — Seamlessly hand off any inline prompt and response to the Chat view to continue an extended conversation.
+* Quick access — Available from the top menu (Limitcode -> Inline Assist) and the editor right-click context menu.
+
+For a more autonomous coding-agent experience, consider using Limitcode Pro.
