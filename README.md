@@ -4,6 +4,8 @@
 
 **[Read the documentation](https://jawuilp.github.io/limitcode-docs/)**
 
+> **Black Friday on [Limitcode Pro](https://limitcode.jawuil.dev/?utm_source=github&utm_medium=readme):** Get the full autonomous coding agent for Sublime Text for **$25** instead of $29 (one-time payment) with code **`LIMITCODE2026`** — [Claim the $25 offer →](https://pjawuil.gumroad.com/l/limitcode/LIMITCODE2026?wanted=true)
+
 It works the way a pair programmer works: the agent only sees and touches the
 files you have open in your editor. You steer the session, you choose what it
 reads, and every edit lands in the buffer you can review immediately — saved
@@ -292,8 +294,10 @@ Packages/User/Limitcode/chat.css
 
 <a href="https://limitcode.jawuil.dev/?utm_source=github&utm_medium=readme" target="_blank" rel="noopener">Limitcode Pro</a>
 
+> **Black Friday Offer:** Limitcode Pro is **$25** (instead of $29, one-time payment) during Black Friday using code **`LIMITCODE2026`**. [Get Limitcode Pro for $25 →](https://pjawuil.gumroad.com/l/limitcode/LIMITCODE2026?wanted=true)
+
 Limitcode Pro is the fully autonomous version of Limitcode. It keeps the same
-editor-native workflow and adds:
+editor-native workflow (including **Inline Assist**) and adds:
 
 - Project-wide file listing, searching, and targeted edits
 - Approved shell command execution
